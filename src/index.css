@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #5e3a1f;
+  --primary-light: #8a6d4b;
+  --secondary: #f8f1e9;
+  --accent: #d4a373;
+  --text: #333333;
+  --light-text: #777777;
+}
+
+/* Custom classes */
+.btn {
+  @apply inline-block px-6 py-3 rounded font-medium transition;
+}
+
+.btn-primary {
+  @apply bg-primary text-white border-2 border-primary;
+}
+
+.btn-primary:hover {
+  @apply bg-primary-light border-primary-light;
+}
+
+.btn-outline {
+  @apply bg-transparent text-primary border-2 border-primary;
+}
+
+.btn-outline:hover {
+  @apply bg-primary text-white;
+}
+
+.section-title {
+  @apply text-4xl mb-8 text-center relative;
+}
+
+.section-title::after {
+  @apply content-[''] absolute bottom-[-12px] left-1/2 transform -translate-x-1/2 w-20 h-1 bg-accent;
+}
+
+:root {
+  --primary: #5e3a1f;
+  --primary-light: #8a6d4b;
+  --secondary: #f8f1e9;
+  --accent: #d4a373;
+  --text: #333333;
+  --light-text: #777777;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  color: var(--text);
+  background-color: #fff;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border: 2px solid var(--primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-light);
+  border-color: var(--primary-light);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.btn-outline:hover {
+  background-color: var(--primary);
+  color: white;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background-color: var(--accent);
+}
