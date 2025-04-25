@@ -6,17 +6,17 @@ import {
 } from '@mui/icons-material';
 
 const footerLinks = [
-  {
-    title: "Shop",
-    items: ["All Fragrances", "Men's Collection", "Women's Collection", "Gift Sets", "Travel Sizes"]
-  },
+  // {
+  //   title: "Shop",
+  //   items: ["All Fragrances", "Men's Collection", "Women's Collection", "Gift Sets", "Travel Sizes"]
+  // },
   {
     title: "About",
-    items: ["Our Story", "Ingredients", "Sustainability", "Blog", "Press"]
+    items: ["Our Story", "Blog", "Press"]
   },
   {
     title: "Customer Care",
-    items: ["Contact Us", "FAQs", "Shipping & Returns", "Track Order", "Privacy Policy"]
+    items: ["Contact Us", "FAQs", "Privacy Policy"]
   }
 ];
 
@@ -30,7 +30,7 @@ const Footer = () => {
               Scentify
             </Typography>
             <Typography paragraph sx={{ mb: 2 }}>
-              Luxury fragrances crafted with passion and precision.
+              Crafting exceptional fragrances since 2010. Our perfumes are designed to evoke emotions and create lasting memories.
             </Typography>
             <Box sx={{ display: 'flex', gap: 2 }}>
               <Link href="#" color="inherit">
@@ -53,9 +53,9 @@ const Footer = () => {
               <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
                 {section.items.map((item, i) => (
                   <li key={i}>
-                    <Link 
-                      href="#" 
-                      color="inherit" 
+                    <Link
+                      href="#"
+                      color="inherit"
                       underline="hover"
                       sx={{ display: 'inline-block', py: 0.5 }}
                     >
@@ -72,12 +72,12 @@ const Footer = () => {
               Contact Us
             </Typography>
             <address style={{ fontStyle: 'normal' }}>
-              <Typography paragraph sx={{ mb: 1 }}>
+              {/* <Typography paragraph sx={{ mb: 1 }}>
                 123 Fragrance Lane
               </Typography>
               <Typography paragraph sx={{ mb: 1 }}>
                 New York, NY 10001
-              </Typography>
+              </Typography> */}
               <Typography paragraph sx={{ mb: 1 }}>
                 Email: info@scentify.com
               </Typography>

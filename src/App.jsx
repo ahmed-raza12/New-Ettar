@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import ProductShowcase from './components/ProductShowcase';
@@ -7,14 +8,25 @@ import Footer from './components/Footer';
 import { Box } from '@mui/material';
 
 function App() {
+  useEffect(() => {
+    console.log('Current cart:', localStorage.getItem('fragranceCart'));
+  }, []);
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header />
       <Box component="main" sx={{ flexGrow: 1 }}>
-        <Hero />
-        <ProductShowcase />
-        <Testimonials />
-        <Newsletter />
+        <Box id="home">
+          <Hero />
+        </Box>
+        <Box id="products">
+          <ProductShowcase />
+        </Box>
+        <Box id="stories">
+          <Testimonials />
+        </Box>
+        <Box id="contact">
+          <Newsletter />
+        </Box>
       </Box>
       <Footer />
     </Box>
