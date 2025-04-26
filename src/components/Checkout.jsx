@@ -4,30 +4,31 @@ import {
     Box,
     Typography,
     TextField,
-    Radio,
-    RadioGroup,
     FormControlLabel,
     Divider,
     Button,
-    Card,
+    Card, Alert,
+    CircularProgress,
     CardContent,
     Grid,
     Avatar,
-    IconButton,
     Checkbox
 } from '@mui/material';
 import {
     CreditCard,
-    //   PayPal,
-    Apple,
     Lock,
     Phone,
     Email,
     Spa
 } from '@mui/icons-material';
 import { getCart } from '../utils/cart';
+import { createOrder } from '../admin/src/services/orderService';
+import { useNavigate } from 'react-router-dom';
 
 const CheckoutForm = () => {
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -36,10 +37,6 @@ const CheckoutForm = () => {
         city: '',
         phone: '',
         saveInfo: false,
-        cardNumber: '',
-        cardName: '',
-        expiry: '',
-        cvv: ''
     });
     const [cartItems, setCartItems] = useState(getCart());
     useEffect(() => {
@@ -57,11 +54,52 @@ const CheckoutForm = () => {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle form submission
-        console.log('Form submitted:', formData);
-        alert('Thank you for your purchase!');
+        setLoading(true);
+        setError('');
+
+        try {
+            const orderData = {
+                customer: {
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    address: formData.address,
+                    apartment: formData.apartment,
+                    city: formData.city,
+                    phone: formData.phone,
+                    saveInfo: formData.saveInfo
+                },
+                items: cartItems.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    image: item.image
+                })),
+                subtotal,
+                total,
+                status: 'pending',
+                paymentMethod: 'credit_card' // You can make this dynamic
+            };
+
+            await createOrder(orderData);
+
+            // Clear cart and redirect
+            localStorage.removeItem('cart');
+            navigate('/order-confirmation', {
+                state: {
+                    orderId: orderData.id,
+                    customerName: `${formData.firstName} ${formData.lastName}`,
+                    total: orderData.total
+                }
+            });
+        } catch (err) {
+            setError('Failed to place order. Please try again.');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -229,8 +267,9 @@ const CheckoutForm = () => {
                                 fullWidth
                                 variant="contained"
                                 size="large"
-                                startIcon={<Lock />}
+                                startIcon={loading ? <CircularProgress size={20} /> : <Lock />}
                                 onClick={handleSubmit}
+                                disabled={loading}
                                 sx={{
                                     bgcolor: 'primary.dark',
                                     '&:hover': { bgcolor: 'primary.main' },
@@ -238,8 +277,14 @@ const CheckoutForm = () => {
                                     mb: 2
                                 }}
                             >
-                                Complete Purchase
+                                {loading ? 'Processing...' : 'Complete Purchase'}
                             </Button>
+
+                            {error && (
+                                <Alert severity="error" sx={{ mb: 2 }}>
+                                    {error}
+                                </Alert>
+                            )}
 
                             <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', display: 'block' }}>
                                 By completing your purchase, you agree to our Terms of Service and Privacy Policy.

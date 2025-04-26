@@ -1,24 +1,26 @@
 import { Box, Typography, Button, Container, useMediaQuery, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import heroImage from '../assets/hero.png';
+
 const Hero = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
+  
   return (
     <Box 
       sx={{
         position: 'relative',
-        height: { xs: '90vh', sm: '80vh' }, // Taller on mobile for better visibility
-        minHeight: '500px', // Ensure it doesn't get too small
+        height: { xs: '100vh', sm: '90vh' },
+        minHeight: '550px',
         bgcolor: 'secondary.main',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center', // Center content vertically
+        justifyContent: 'center',
         overflow: 'hidden'
       }}
     >
-      {/* Overlay */}
+      {/* Gradient Overlay for more depth and luxury feel */}
       <Box 
         sx={{
           position: 'absolute',
@@ -26,7 +28,7 @@ const Hero = () => {
           left: 0,
           width: '100%',
           height: '100%',
-          bgcolor: 'rgba(0,0,0,0.3)',
+          background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
           zIndex: 1
         }}
       />
@@ -36,73 +38,126 @@ const Hero = () => {
         sx={{ 
           position: 'relative', 
           zIndex: 2,
-          px: { xs: 3, sm: 4 }, // More padding on mobile
-          py: { xs: 4, sm: 0 } // Vertical padding on mobile
+          px: { xs: 3, sm: 4, md: 6 },
+          py: { xs: 4, sm: 0 }
         }}
       >
         <Box 
-          maxWidth="sm" 
+          maxWidth="md" 
           sx={{
-            textAlign: { xs: 'center', sm: 'left' }, // Center text on mobile
-            mt: { xs: 4, sm: 0 } // Add top margin on mobile if needed
+            textAlign: { xs: 'center', sm: 'left' },
+            mt: { xs: 4, sm: 0 }
           }}
         >
+          {/* Subtle accent line above heading */}
+          <Box 
+            sx={{ 
+              width: { xs: '60px', sm: '80px' },
+              height: '3px',
+              bgcolor: 'primary.light',
+              mb: 3,
+              mx: { xs: 'auto', sm: 0 }
+            }} 
+          />
+          
+          <Typography 
+            variant="overline" 
+            sx={{ 
+              color: 'common.white',
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              letterSpacing: '0.2em',
+              mb: 2,
+              display: 'block',
+              opacity: 0.9
+            }}
+          >
+            LUXURY FRAGRANCES
+          </Typography>
+          
           <Typography 
             variant="h1" 
             gutterBottom 
             sx={{ 
               color: 'common.white',
               fontSize: { 
-                xs: '2rem', // Smaller on very small devices
-                sm: '2.5rem', 
-                md: '3.75rem' 
+                xs: '2.2rem',
+                sm: '3rem', 
+                md: '4rem' 
               },
-              lineHeight: 1.2,
-              fontWeight: 700,
-              mb: { xs: 2, sm: 3 }
+              lineHeight: 1.1,
+              fontWeight: 600,
+              mb: { xs: 2, sm: 3 },
+              letterSpacing: '-0.02em',
+              textShadow: '0px 2px 4px rgba(0,0,0,0.2)'
             }}
           >
             Discover Your Signature Scent
           </Typography>
+          
           <Typography 
             variant="h5" 
             gutterBottom 
             sx={{ 
               color: 'common.white',
-              mb: 4,
-              fontSize: { xs: '1.1rem', sm: '1.25rem' }, // Adjust subtitle size
-              lineHeight: 1.5
+              mb: 5,
+              fontSize: { xs: '1.1rem', sm: '1.3rem' },
+              lineHeight: 1.6,
+              fontWeight: 300,
+              maxWidth: { sm: '90%', md: '80%' },
+              opacity: 0.85
             }}
           >
-            Luxury fragrances crafted with the finest ingredients to elevate your everyday.
+            Artisan fragrances crafted with rare ingredients to elevate your presence and leave an unforgettable impression.
           </Typography>
+          
           <Box 
             sx={{ 
               display: 'flex', 
-              gap: 2,
-              flexDirection: { xs: 'column', sm: 'row' }, // Stack buttons vertically on mobile
+              gap: 3,
+              flexDirection: { xs: 'column', sm: 'row' },
               justifyContent: { xs: 'center', sm: 'flex-start' }
             }}
           >
             <Button 
               variant="contained" 
               color="primary"
-              size={isMobile ? 'medium' : 'large'} // Slightly smaller on mobile
-              fullWidth={isMobile} // Full width on mobile
+              size={isMobile ? 'medium' : 'large'}
+              fullWidth={isMobile}
+              sx={{
+                px: { xs: 4, sm: 5 },
+                py: { xs: 1.2, sm: 1.5 },
+                borderRadius: '2px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+                fontWeight: 500,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                transition: 'all 0.3s ease'
+              }}
             >
               Shop Now
             </Button>
+            
             <Button 
               variant="outlined" 
               sx={{ 
                 color: 'common.white', 
                 borderColor: 'common.white',
+                borderWidth: '1.5px',
+                px: { xs: 4, sm: 5 },
+                py: { xs: 1.2, sm: 1.5 },
+                borderRadius: '2px',
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+                fontWeight: 500,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                whiteSpace: 'nowrap',
                 '&:hover': {
-                  bgcolor: 'common.white',
-                  color: 'primary.main',
-                  borderColor: 'common.white'
+                  bgcolor: 'rgba(255,255,255,0.1)',
+                  borderColor: 'common.white',
+                  borderWidth: '1.5px'
                 },
-                whiteSpace: 'nowrap' // Prevent button text from wrapping
+                transition: 'all 0.3s ease'
               }}
               size={isMobile ? 'medium' : 'large'}
               fullWidth={isMobile}
@@ -114,7 +169,7 @@ const Hero = () => {
         </Box>
       </Container>
       
-      {/* Background Image - with mobile-specific optimizations */}
+      {/* Background Image with enhanced styling */}
       <Box 
         component="img"
         src={heroImage}
@@ -126,9 +181,20 @@ const Hero = () => {
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          objectPosition: { xs: 'center center', sm: 'center center' } // Adjust focus point if needed
+          objectPosition: { xs: '70% center', sm: 'center center' },
+          filter: 'brightness(0.85)',
+          transition: 'transform 8s ease-in-out',
+          animation: 'subtle-zoom 15s infinite alternate',
+          '@keyframes subtle-zoom': {
+            '0%': {
+              transform: 'scale(1)'
+            },
+            '100%': {
+              transform: 'scale(1.05)'
+            }
+          }
         }}
-        loading="lazy" // Better performance
+        loading="eager" // Critical for hero section
       />
     </Box>
   );

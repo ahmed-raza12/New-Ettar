@@ -160,8 +160,8 @@ const Header = () => {
                     }}>
                         {/* Left Navigation - Desktop */}
                         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 4 }}>
-                            <NavLink onClick={() => handleNavigation('products')}>Shop</NavLink>
-                            <NavLink onClick={() => handleNavigation('contact')}>Contact</NavLink>
+                            <NavLink onClick={() => handleNavigation('home')}>Home</NavLink>
+                            <NavLink onClick={() => handleNavigation('products')}>Products</NavLink>
                         </Box>
 
                         {/* Mobile Menu Button */}
@@ -187,7 +187,7 @@ const Header = () => {
                                 onClick={() => handleNavigation('home')}
                                 sx={{ cursor: 'pointer' }}
                             >
-                                U DIN FRAGRANCE
+                                𝒰 𝒟𝐼𝒩 𝐹𝑅𝒜𝒢𝑅𝒜𝒩𝒞𝐸
                             </LogoText>
                         </Box>
 
@@ -198,7 +198,7 @@ const Header = () => {
                             alignItems: 'center'
                         }}>
                             <NavLink onClick={() => handleNavigation('stories')}>Stories</NavLink>
-                            <NavLink onClick={() => handleNavigation('products')}>Products</NavLink>
+                            <NavLink onClick={() => handleNavigation('contact')}>Contact</NavLink>
 
                             {/* Update both cart icons in the header */}
                             <IconButton onClick={toggleCart}>

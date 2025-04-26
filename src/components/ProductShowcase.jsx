@@ -22,6 +22,8 @@ import {
 } from '@mui/icons-material';
 import { addToCart } from '../utils/cart';
 import { useNavigate } from 'react-router-dom';
+import { getProducts } from '../admin/src/services/productService';
+
 import product1 from '../assets/product-1.avif';
 import product2 from '../assets/product-2.jpg';
 import product3 from '../assets/product-3.jpg';
@@ -85,6 +87,22 @@ const ProductShowcase = () => {
   const [cart, setCart] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const unsubscribe = getProducts((data) => {
+      setProducts(data);
+      setLoading(false);
+    }, (error) => {
+      setError('Failed to load products');
+      setLoading(false);
+      console.error(error);
+    });
+
+    return () => unsubscribe();
+  }, []);
   // Load cart from localStorage on component mount
   useEffect(() => {
     const savedCart = localStorage.getItem('fragranceCart');
@@ -132,26 +150,37 @@ const ProductShowcase = () => {
     setAutoPlay(true);
   };
 
+  // Replace your current handleNext/handlePrev functions with this:
   const handleNext = () => {
     if (sliding) return;
     setDirection('next');
     setSliding(true);
+
+    // Preload next image before animation
+    const nextIndex = (currentIndex + 1) % products.length;
+    const img = new Image();
+    img.src = products[nextIndex].image;
+
     setTimeout(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % products.length);
+      setCurrentIndex(nextIndex);
       setSliding(false);
-    }, 400); // Increased duration for smoother animation
+    }, 500); // Increased duration for better loading
   };
 
   const handlePrev = () => {
     if (sliding) return;
     setDirection('prev');
     setSliding(true);
+
+    // Preload previous image before animation
+    const prevIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
+    const img = new Image();
+    img.src = products[prevIndex].image;
+
     setTimeout(() => {
-      setCurrentIndex((prevIndex) =>
-        prevIndex === 0 ? products.length - 1 : prevIndex - 1
-      );
+      setCurrentIndex(prevIndex);
       setSliding(false);
-    }, 400); // Increased duration for smoother animation
+    }, 500); // Increased duration for better loading
   };
 
   const goToSlide = (index) => {
@@ -567,6 +596,7 @@ const ProductShowcase = () => {
                   </IconButton>
 
                   <CardMedia
+                    key={`${product.id}-${currentIndex}`}
                     component="img"
                     image={product.image}
                     alt={product.name}
@@ -574,10 +604,15 @@ const ProductShowcase = () => {
                       height: 300,
                       objectFit: 'cover',
                       transition: 'all 0.5s',
+                      willChange: 'transform',
+                      backfaceVisibility: 'hidden',
+                      transform: 'translateZ(0)',
                       '&:hover': {
-                        transform: 'scale(1.03)'
+                        transform: 'scale(1.03) translateZ(0)'
                       }
                     }}
+                    loading="eager"
+                    decoding="sync"
                   />
                   <CardContent sx={{ flexGrow: 1, p: 3, position: 'relative', zIndex: 1 }}>
                     <Typography

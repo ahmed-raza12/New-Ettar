@@ -43,6 +43,8 @@ import {
 } from '@mui/icons-material';
 import { getCart, removeFromCart, updateCartItem, addToCart } from '../utils/cart';
 import { useNavigate } from 'react-router-dom';
+import { getProducts } from '../admin/src/services/productService';
+
 import product1 from '../assets/product-1.avif';
 import product2 from '../assets/product-2.jpg';
 import product3 from '../assets/product-3.jpg';
@@ -140,12 +142,29 @@ const ProductsPage = () => {
     const navigate = useNavigate();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+  
     const [filter, setFilter] = useState('all');
     const [sortBy, setSortBy] = useState('default');
     const [page, setPage] = useState(1);
     const [cartItems, setCartItems] = useState(getCart());
     const [cartOpen, setCartOpen] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
+
+    useEffect(() => {
+        const unsubscribe = getProducts((data) => {
+          setProducts(data);
+          setLoading(false);
+        }, (error) => {
+          setError('Failed to load products');
+          setLoading(false);
+          console.error(error);
+        });
+    
+        return () => unsubscribe();
+      }, []);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -256,7 +275,7 @@ const ProductsPage = () => {
                                 flexGrow: 1
                             }}
                         >
-                            U DIN FRAGRANCE
+                            𝒰 𝒟𝐼𝒩 𝐹𝑅𝒜𝒢𝑅𝒜𝒩𝒞𝐸
                         </LogoText>
                     </Box>
 
