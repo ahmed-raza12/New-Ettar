@@ -22,10 +22,10 @@ const OrderConfirmation = () => {
         Order #{state.orderId}
       </Typography>
       <Typography variant="body1" sx={{ mb: 4 }}>
-        A confirmation has been sent to your email. We'll notify you when your order ships.
+        A confirmation has been sent to your number.
       </Typography>
       <Typography variant="h6" sx={{ mb: 4 }}>
-        Total: ${state.total.toFixed(2)}
+        Total: Rs.{state.total.toFixed(2)}
       </Typography>
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
         <Button 
@@ -35,13 +35,13 @@ const OrderConfirmation = () => {
         >
           Continue Shopping
         </Button>
-        <Button 
+        {/* <Button 
           variant="outlined" 
           onClick={() => navigate(`/order-tracking/${state.orderId}`)}
           sx={{ px: 4, py: 2 }}
         >
           Track Order
-        </Button>
+        </Button> */}
       </Box>
     </Container>
   );

@@ -45,7 +45,7 @@ const TopProducts = ({ orders, products }) => {
               {product.name}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {product.quantity} sold • ${product.revenue.toFixed(2)}
+              {product.quantity} sold • Rs.{product.revenue.toFixed(2)}
             </Typography>
           </Box>
           <Chip

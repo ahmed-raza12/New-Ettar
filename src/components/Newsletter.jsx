@@ -15,23 +15,27 @@ const Newsletter = () => {
   return (
     <Box sx={{ py: 10, bgcolor: 'primary.main', color: 'common.white' }}>
       <Container>
-        <Typography 
-          variant="h2" 
-          align="center" 
+      <Typography
+          variant="h2"
+          align="center"
           gutterBottom
           sx={{
             position: 'relative',
-            mb: 4,
-            '&:after': {
-              content: '""',
-              position: 'absolute',
-              bottom: -16,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: 80,
-              height: 3,
-              bgcolor: 'accent.main'
-            }
+            mb: {
+              xs: 5,
+              sm: 5,
+              md: 6
+            },
+            fontWeight: 700,
+            fontSize: {
+              xs: '1.6rem',    // Small mobile screens
+              sm: '2.5rem',  // Larger mobile/small tablet screens
+              md: '3rem',    // Medium screens (tablets)
+              lg: '3.5rem',  // Large screens (desktop)
+            },
+            backgroundImage: 'linear-gradient(45deg, #fff, #eee)',
+            backgroundClip: 'text',
+            color: 'transparent'
           }}
         >
           Stay Connected

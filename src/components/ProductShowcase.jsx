@@ -8,14 +8,14 @@ import {
   Button,
   Box,
   IconButton,
-  useTheme,
+  useTheme, CircularProgress,
   useMediaQuery,
   Snackbar, Alert, AlertTitle,
   Fade
 } from '@mui/material';
 import {
-  ArrowBackIos as ArrowBackIcon,
-  ArrowForwardIos as ArrowForwardIcon,
+  KeyboardArrowLeft as ArrowBackIcon,
+  KeyboardArrowRight as ArrowForwardIcon,
   FavoriteBorder as FavoriteIcon,
   CheckCircleSharp,
   ShoppingBagOutlined as CartIcon
@@ -111,6 +111,14 @@ const ProductShowcase = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (products.length > 0 && currentIndex >= products.length) {
+      setCurrentIndex(0);
+    }
+
+    preloadAllImages();
+  }, [products]);
+
   // Update the addToCart function to properly update localStorage
   const handleAddToCart = (product) => {
     const updatedCart = addToCart(product);
@@ -150,47 +158,160 @@ const ProductShowcase = () => {
     setAutoPlay(true);
   };
 
-  // Replace your current handleNext/handlePrev functions with this:
   const handleNext = () => {
-    if (sliding) return;
+    if (sliding || !products || products.length === 0) return;
     setDirection('next');
     setSliding(true);
 
-    // Preload next image before animation
+    // Preload next image with proper load handling
     const nextIndex = (currentIndex + 1) % products.length;
     const img = new Image();
-    img.src = products[nextIndex].image;
 
-    setTimeout(() => {
-      setCurrentIndex(nextIndex);
+    // Make sure product exists and has an image property
+    if (!products[nextIndex] || !products[nextIndex].image) {
+      console.error('Missing product or product image at index:', nextIndex);
       setSliding(false);
-    }, 500); // Increased duration for better loading
+      return;
+    }
+
+    img.onload = () => {
+      // Only advance to next slide after image is loaded
+      setCurrentIndex(nextIndex);
+      setTimeout(() => {
+        setSliding(false);
+      }, 500);
+    };
+
+    img.onerror = () => {
+      // Handle image load error
+      console.error(`Failed to load image for product ${products[nextIndex].name}`);
+      setCurrentIndex(nextIndex);
+      setTimeout(() => {
+        setSliding(false);
+      }, 500);
+    };
+
+    // Set source after attaching event handlers
+    img.src = products[nextIndex].image;
   };
 
+  // Apply similar safety checks to handlePrev and goToSlide
   const handlePrev = () => {
-    if (sliding) return;
+    if (sliding || !products || products.length === 0) return;
     setDirection('prev');
     setSliding(true);
 
-    // Preload previous image before animation
     const prevIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
     const img = new Image();
-    img.src = products[prevIndex].image;
 
-    setTimeout(() => {
-      setCurrentIndex(prevIndex);
+    if (!products[prevIndex] || !products[prevIndex].image) {
+      console.error('Missing product or product image at index:', prevIndex);
       setSliding(false);
-    }, 500); // Increased duration for better loading
+      return;
+    }
+
+    img.onload = () => {
+      setCurrentIndex(prevIndex);
+      setTimeout(() => {
+        setSliding(false);
+      }, 500);
+    };
+
+    img.onerror = () => {
+      console.error(`Failed to load image for product ${products[prevIndex].name}`);
+      setCurrentIndex(prevIndex);
+      setTimeout(() => {
+        setSliding(false);
+      }, 500);
+    };
+
+    img.src = products[prevIndex].image;
   };
 
   const goToSlide = (index) => {
-    if (sliding || index === currentIndex) return;
+    if (sliding || index === currentIndex || !products || products.length === 0) return;
+
+    if (!products[index] || !products[index].image) {
+      console.error('Missing product or product image at index:', index);
+      return;
+    }
+
     setDirection(index > currentIndex ? 'next' : 'prev');
     setSliding(true);
-    setTimeout(() => {
+
+    const img = new Image();
+
+    img.onload = () => {
       setCurrentIndex(index);
-      setSliding(false);
-    }, 400);
+      setTimeout(() => {
+        setSliding(false);
+      }, 400);
+    };
+
+    img.onerror = () => {
+      console.error(`Failed to load image for product ${products[index].name}`);
+      setCurrentIndex(index);
+      setTimeout(() => {
+        setSliding(false);
+      }, 400);
+    };
+
+    img.src = products[index].image;
+  };
+
+  // Update the preloadAllImages function with safety checks
+  const preloadAllImages = () => {
+    if (!products || products.length === 0) return;
+
+    products.forEach(product => {
+      if (product && product.image) {
+        const img = new Image();
+        img.src = product.image;
+      }
+    });
+  };
+
+  // Fix the getVisibleProducts function to handle empty products
+  const getVisibleProducts = () => {
+    if (!products || products.length === 0) {
+      return [];
+    }
+
+    if (isMobile) {
+      return [
+        { ...products[currentIndex], position: 'center' }
+      ];
+    } else if (isTablet) {
+      // For tablets, show 2 products
+      let visible = [];
+      for (let i = 0; i < Math.min(2, products.length); i++) {
+        const index = (currentIndex + i) % products.length;
+        visible.push({
+          ...products[index],
+          position: i === 0 ? 'center-left' : 'center-right'
+        });
+      }
+      return visible;
+    } else {
+      // For desktop, show 3 products, but only if we have enough products
+      let visible = [];
+      if (products.length >= 3) {
+        const prevIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
+        const nextIndex = (currentIndex + 1) % products.length;
+
+        visible.push({ ...products[prevIndex], position: 'left' });
+        visible.push({ ...products[currentIndex], position: 'center' });
+        visible.push({ ...products[nextIndex], position: 'right' });
+      } else if (products.length === 2) {
+        // Only 2 products available
+        visible.push({ ...products[0], position: 'left' });
+        visible.push({ ...products[1], position: 'center' });
+      } else if (products.length === 1) {
+        // Only 1 product available
+        visible.push({ ...products[0], position: 'center' });
+      }
+      return visible;
+    }
   };
 
   const handleTouchStart = (e) => {
@@ -217,37 +338,6 @@ const ProductShowcase = () => {
     setTouchStart(null);
     setTouchEnd(null);
     setAutoPlay(true); // Resume autoplay after touch
-  };
-
-  // Calculate visible products based on screen size
-  const getVisibleProducts = () => {
-    if (isMobile) {
-      return [
-        { ...products[currentIndex], position: 'center' }
-      ];
-    } else if (isTablet) {
-      // For tablets, show 2 products
-      let visible = [];
-      for (let i = 0; i < 2; i++) {
-        const index = (currentIndex + i) % products.length;
-        visible.push({
-          ...products[index],
-          position: i === 0 ? 'center-left' : 'center-right'
-        });
-      }
-      return visible;
-    } else {
-      // For desktop, show 3 products
-      let visible = [];
-      const prevIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
-      const nextIndex = (currentIndex + 1) % products.length;
-
-      visible.push({ ...products[prevIndex], position: 'left' });
-      visible.push({ ...products[currentIndex], position: 'center' });
-      visible.push({ ...products[nextIndex], position: 'right' });
-
-      return visible;
-    }
   };
 
   const visibleProducts = getVisibleProducts();
@@ -364,8 +454,18 @@ const ProductShowcase = () => {
           gutterBottom
           sx={{
             position: 'relative',
-            mb: 8,
+            mb: {
+              xs: 3,
+              sm: 5,
+              md: 6
+            },
             fontWeight: 700,
+            fontSize: {
+              xs: '2rem',    // Small mobile screens
+              sm: '2.5rem',  // Larger mobile/small tablet screens
+              md: '3rem',    // Medium screens (tablets)
+              lg: '3.5rem',  // Large screens (desktop)
+            },
             backgroundImage: 'linear-gradient(45deg, #333, #666)',
             backgroundClip: 'text',
             color: 'transparent',
@@ -375,7 +475,11 @@ const ProductShowcase = () => {
               bottom: -16,
               left: '50%',
               transform: 'translateX(-50%)',
-              width: 100,
+              width: {
+                xs: 30,  // Smaller line on mobile
+                sm: 80,  // Medium line on tablets
+                md: 100, // Full width line on desktop
+              },
               height: 3,
               backgroundImage: 'linear-gradient(to right, #333, #666)',
               borderRadius: 4
@@ -384,306 +488,320 @@ const ProductShowcase = () => {
         >
           Our Signature Scents
         </Typography>
-
-        <Box
-          sx={{
-            position: 'relative',
-            width: '100%',
-            height: isMobile ? 580 : isTablet ? 550 : 600,
-            mx: 'auto',
-            mb: 6
-          }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          ref={sliderRef}
-        >
-          {/* Custom progress indicator */}
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
+            <Typography color="error">{error}</Typography>
+          </Box>
+        ) : products.length === 0 ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
+            <Typography>No products available</Typography>
+          </Box>
+        ) : (
           <Box
             sx={{
-              position: 'absolute',
-              bottom: -30,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: 200,
-              height: 2,
-              bgcolor: 'rgba(0,0,0,0.1)',
-              borderRadius: 5,
-              overflow: 'hidden',
-              zIndex: 3
+              position: 'relative',
+              width: '100%',
+              height: isMobile ? 580 : isTablet ? 550 : 600,
+              mx: 'auto',
+              mb: 6
             }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            ref={sliderRef}
           >
+            {/* Custom progress indicator */}
             <Box
               sx={{
-                height: '100%',
-                width: `${100 / products.length}%`,
-                bgcolor: 'primary.main',
-                borderRadius: 5,
                 position: 'absolute',
-                left: `${(currentIndex / products.length) * 100}%`,
-                transition: 'left 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}
-            />
-          </Box>
-
-          {/* Navigation arrows for all devices */}
-          <Box
-            sx={{
-              position: 'absolute',
-              display: 'flex',
-              justifyContent: 'space-between',
-              width: '100%',
-              // left: '-8%',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              zIndex: 4,
-              pointerEvents: 'none',
-              px: { xs: 1, md: 0 }
-            }}
-          >
-            <IconButton
-              onClick={handlePrev}
-              sx={{
-                bgcolor: 'rgba(255,255,255,0.9)',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                // backdropFilter: 'blur(5px)',
-                color: 'text.primary',
-                transition: 'all 0.2s',
-                width: { xs: 40, md: 56 },
-                height: { xs: 40, md: 56 },
-                pointerEvents: 'auto',
-                '&:hover': {
-                  bgcolor: 'primary.main',
-                  color: 'common.white',
-                  transform: 'scale(1.1)',
-                }
+                bottom: -30,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 200,
+                height: 2,
+                bgcolor: 'rgba(0,0,0,0.1)',
+                borderRadius: 5,
+                overflow: 'hidden',
+                zIndex: 3
               }}
             >
-              <ArrowBackIcon />
-            </IconButton>
-            <IconButton
-              onClick={handleNext}
-              sx={{
-                bgcolor: 'rgba(255,255,255,0.9)',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                backdropFilter: 'blur(5px)',
-                color: 'text.primary',
-                transition: 'all 0.2s',
-                width: { xs: 40, md: 56 },
-                height: { xs: 40, md: 56 },
-                pointerEvents: 'auto',
-                '&:hover': {
+              <Box
+                sx={{
+                  height: '100%',
+                  width: `${100 / products.length}%`,
                   bgcolor: 'primary.main',
-                  color: 'common.white',
-                  transform: 'scale(1.1)',
-                }
+                  borderRadius: 5,
+                  position: 'absolute',
+                  left: `${(currentIndex / products.length) * 100}%`,
+                  transition: 'left 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+              />
+            </Box>
+
+            {/* Navigation arrows for all devices */}
+            <Box
+              sx={{
+                position: 'absolute',
+                display: 'flex',
+                justifyContent: 'space-between',
+                width: '100%',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 4,
+                pointerEvents: 'none',
+                px: { xs: 1, md: 0 }
               }}
             >
-              <ArrowForwardIcon />
-            </IconButton>
-          </Box>
+              <IconButton
+                onClick={handlePrev}
+                sx={{
+                  bgcolor: 'rgba(255,255,255,0.9)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  backdropFilter: 'blur(5px)',
+                  color: 'text.primary',
+                  transition: 'all 0.2s',
+                  width: { xs: 40, md: 56 },
+                  height: { xs: 40, md: 56 },
+                  pointerEvents: 'auto',
+                  alignContent: 'center',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  '&:hover': {
+                    bgcolor: 'primary.main',
+                    color: 'common.white',
+                    transform: 'scale(1.1)',
+                  }
+                }}
+              >
+                <ArrowBackIcon />
+              </IconButton>
+              <IconButton
+                onClick={handleNext}
+                sx={{
+                  bgcolor: 'rgba(255,255,255,0.9)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  backdropFilter: 'blur(5px)',
+                  color: 'text.primary',
+                  transition: 'all 0.2s',
+                  width: { xs: 40, md: 56 },
+                  height: { xs: 40, md: 56 },
+                  pointerEvents: 'auto',
+                  '&:hover': {
+                    bgcolor: 'primary.main',
+                    color: 'common.white',
+                    transform: 'scale(1.1)',
+                  }
+                }}
+              >
+                <ArrowForwardIcon />
+              </IconButton>
+            </Box>
 
-          {/* Dots indicator for mobile and tablet */}
-          {(isMobile || isTablet) && (
+            {/* Dots indicator for mobile and tablet */}
+            {(isMobile || isTablet) && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: 1,
+                  position: 'absolute',
+                  bottom: -60,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  zIndex: 2
+                }}
+              >
+                {products.map((_, index) => (
+                  <Box
+                    key={index}
+                    onClick={() => goToSlide(index)}
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      bgcolor: currentIndex === index ? 'primary.main' : 'grey.300',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s',
+                      transform: currentIndex === index ? 'scale(1.5)' : 'scale(1)',
+                      '&:hover': {
+                        bgcolor: currentIndex === index ? 'primary.dark' : 'grey.400',
+                      }
+                    }}
+                  />
+                ))}
+              </Box>
+            )}
+
+            {/* Products slider */}
             <Box
               sx={{
                 display: 'flex',
                 justifyContent: 'center',
-                gap: 1,
-                position: 'absolute',
-                bottom: -60,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                zIndex: 2
+                alignItems: 'center',
+                width: '100%',
+                height: '100%',
+                position: 'relative',
+                perspective: 1000
               }}
             >
-              {products.map((_, index) => (
+              {visibleProducts.map((product) => (
+                // <Fade key={product.id} in={!sliding} timeout={400}>
                 <Box
-                  key={index}
-                  onClick={() => goToSlide(index)}
                   sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    bgcolor: currentIndex === index ? 'primary.main' : 'grey.300',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s',
-                    transform: currentIndex === index ? 'scale(1.5)' : 'scale(1)',
-                    '&:hover': {
-                      bgcolor: currentIndex === index ? 'primary.dark' : 'grey.400',
-                    }
-                  }}
-                />
-              ))}
-            </Box>
-          )}
-
-          {/* Products slider */}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '100%',
-              height: '100%',
-              position: 'relative',
-              perspective: 1000
-            }}
-          >
-            {visibleProducts.map((product) => (
-              // <Fade key={product.id} in={!sliding} timeout={400}>
-              <Box
-                sx={{
-                  width: isMobile ? '90%' : isTablet ? '45%' : '30%',
-                  minWidth: isMobile ? '90%' : isTablet ? 300 : 350,
-                  maxWidth: isMobile ? '90%' : isTablet ? 350 : 450,
-                  position: isMobile ? 'absolute' : 'relative',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  ...getSlideStyle(product.position)
-                }}
-              >
-                <Card
-                  sx={{
-                    width: '100%',
-                    height: '90%',
+                    width: isMobile ? '90%' : isTablet ? '45%' : '30%',
+                    minWidth: isMobile ? '90%' : isTablet ? 300 : 350,
+                    maxWidth: isMobile ? '90%' : isTablet ? 350 : 450,
+                    position: isMobile ? 'absolute' : 'relative',
+                    height: '100%',
                     display: 'flex',
-                    flexDirection: 'column',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
-                    borderRadius: 3,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    transition: 'all 0.3s',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      background: 'linear-gradient(to bottom, rgba(0,0,0,0) 70%, rgba(0,0,0,0.02) 100%)',
-                      zIndex: 0
-                    },
-                    '&:hover': {
-                      transform: product.position === 'center' ? 'translateY(-10px)' : 'translateY(-5px)',
-                      boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
-                    }
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    ...getSlideStyle(product.position)
                   }}
                 >
-                  {/* Favorite button */}
-                  <IconButton
-                    size="small"
+                  <Card
                     sx={{
-                      position: 'absolute',
-                      top: 12,
-                      right: 12,
-                      bgcolor: 'rgba(255,255,255,0.9)',
-                      backdropFilter: 'blur(5px)',
-                      zIndex: 2,
-                      transition: 'all 0.2s',
+                      width: '100%',
+                      height: '90%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
+                      borderRadius: 3,
+                      position: 'relative',
+                      overflow: 'hidden',
+                      transition: 'all 0.3s',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(to bottom, rgba(0,0,0,0) 70%, rgba(0,0,0,0.02) 100%)',
+                        zIndex: 0
+                      },
                       '&:hover': {
-                        bgcolor: 'primary.light',
-                        color: 'primary.main',
-                        transform: 'scale(1.1)'
+                        transform: product.position === 'center' ? 'translateY(-10px)' : 'translateY(-5px)',
+                        boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
                       }
                     }}
                   >
-                    <FavoriteIcon fontSize="small" />
-                  </IconButton>
-
-                  <CardMedia
-                    key={`${product.id}-${currentIndex}`}
-                    component="img"
-                    image={product.image}
-                    alt={product.name}
-                    sx={{
-                      height: 300,
-                      objectFit: 'cover',
-                      transition: 'all 0.5s',
-                      willChange: 'transform',
-                      backfaceVisibility: 'hidden',
-                      transform: 'translateZ(0)',
-                      '&:hover': {
-                        transform: 'scale(1.03) translateZ(0)'
-                      }
-                    }}
-                    loading="eager"
-                    decoding="sync"
-                  />
-                  <CardContent sx={{ flexGrow: 1, p: 3, position: 'relative', zIndex: 1 }}>
-                    <Typography
-                      variant="overline"
-                      component="div"
-                      color="primary"
-                      sx={{ fontWeight: 600, mb: 1 }}
-                    >
-                      {product.category}
-                    </Typography>
-                    <Typography
-                      variant="h5"
-                      component="h3"
+                    {/* Favorite button */}
+                    <IconButton
+                      size="small"
                       sx={{
-                        fontWeight: 700,
-                        mb: 1,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
+                        position: 'absolute',
+                        top: 12,
+                        right: 12,
+                        bgcolor: 'rgba(255,255,255,0.9)',
+                        backdropFilter: 'blur(5px)',
+                        zIndex: 2,
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          bgcolor: 'primary.light',
+                          color: 'primary.main',
+                          transform: 'scale(1.1)'
+                        }
                       }}
                     >
-                      {product.name}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        mb: 3,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        height: 40
-                      }}
-                    >
-                      {product.description}
-                    </Typography>
+                      <FavoriteIcon fontSize="small" />
+                    </IconButton>
 
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="h6" color="primary" sx={{ fontWeight: 700 }}>
-                        ${product.price}
-                      </Typography>
-                      <Button
-                        variant="contained"
+                    <CardMedia
+                      key={`${product.id}-${currentIndex}-${Date.now()}`}
+                      component="img"
+                      image={product.image}
+                      alt={product.name}
+                      sx={{
+                        height: 300,
+                        objectFit: 'cover',
+                        transition: 'all 0.5s',
+                        willChange: 'transform',
+                        backfaceVisibility: 'hidden',
+                        transform: 'translateZ(0)',
+                        '&:hover': {
+                          transform: 'scale(1.03) translateZ(0)'
+                        }
+                      }}
+                      loading="eager"
+                      decoding="async"
+                    />
+                    <CardContent sx={{ flexGrow: 1, p: 3, position: 'relative', zIndex: 1 }}>
+                      <Typography
+                        variant="overline"
+                        component="div"
                         color="primary"
-                        startIcon={<CartIcon />}
-                        onClick={() => handleAddToCart(product)}
+                        sx={{ fontWeight: 600, mb: 1 }}
+                      >
+                        {product.category}
+                      </Typography>
+                      <Typography
+                        variant="h5"
+                        component="h3"
                         sx={{
-                          borderRadius: 6,
-                          px: 3,
-                          py: 1,
-                          transition: 'all 0.3s',
-                          background: 'linear-gradient(45deg, #333, #666)',
-                          boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
-                          '&:hover': {
-                            transform: 'translateY(-3px)',
-                            boxShadow: '0 8px 20px rgba(0,0,0,0.2)'
-                          }
+                          fontWeight: 700,
+                          mb: 1,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
                         }}
                       >
-                        Add to Cart
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Box>
-              // </Fade>
-            ))}
-          </Box>
-        </Box>
+                        {product.name}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          mb: 3,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          height: 40
+                        }}
+                      >
+                        {product.description}
+                      </Typography>
 
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="h6" color="primary" sx={{ fontWeight: 700 }}>
+                          Rs.{product.price}
+                        </Typography>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          startIcon={<CartIcon />}
+                          onClick={() => handleAddToCart(product)}
+                          sx={{
+                            borderRadius: 6,
+                            px: 3,
+                            py: 1,
+                            transition: 'all 0.3s',
+                            background: 'linear-gradient(45deg, #333, #666)',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                            '&:hover': {
+                              transform: 'translateY(-3px)',
+                              boxShadow: '0 8px 20px rgba(0,0,0,0.2)'
+                            }
+                          }}
+                        >
+                          Add to Cart
+                        </Button>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Box>
+                // </Fade>
+              ))}
+            </Box>
+          </Box>
+        )}
         <Box sx={{ textAlign: 'center', mt: 10 }}>
           <Button
             variant="outlined"

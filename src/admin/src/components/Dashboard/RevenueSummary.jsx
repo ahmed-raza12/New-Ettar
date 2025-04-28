@@ -2,13 +2,14 @@
 import { Box, Paper, Typography } from '@mui/material';
 import {
   AttachMoney as DollarIcon,
+  CurrencyRupee as RupeeIcon,
   ShoppingBag as OrdersIcon,
   LocalBar as ProductsIcon,
   People as CustomersIcon
 } from '@mui/icons-material';
 
 const iconMap = {
-  dollar: <DollarIcon fontSize="large" />,
+  rupee: <RupeeIcon fontSize="large" />,
   orders: <OrdersIcon fontSize="large" />,
   products: <ProductsIcon fontSize="large" />,
   customers: <CustomersIcon fontSize="large" />
@@ -16,7 +17,7 @@ const iconMap = {
 
 const RevenueSummary = ({ title, value, change, icon }) => {
   const formattedValue = title.includes('Revenue') 
-    ? `$${value.toLocaleString()}`
+    ? `Rs.${value.toLocaleString()}`
     : value.toLocaleString();
 
   return (

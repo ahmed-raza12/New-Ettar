@@ -227,7 +227,7 @@ const Header = () => {
                     {/* Mobile Menu */}
                     <MobileMenu className={mobileMenuOpen ? 'open' : ''}>
                         <List>
-                            <ListItem button onClick={() => handleNavigation('products')}>
+                            <ListItem button onClick={() => handleNavigation('home')}>
                                 <ListItemText
                                     primary="Shop"
                                     primaryTypographyProps={{
@@ -266,9 +266,9 @@ const Header = () => {
                             </ListItem>
                             <Divider />
 
-                            <ListItem button>
+                            <ListItem button onClick={() => handleNavigation('products')}>
                                 <ListItemText
-                                    primary="Account"
+                                    primary="Products"
                                     primaryTypographyProps={{
                                         textTransform: 'uppercase',
                                         fontSize: '0.875rem',
@@ -448,7 +448,7 @@ const Header = () => {
                                                         </IconButton>
                                                     </Box>
                                                     <Typography variant="body1" fontWeight="medium">
-                                                        ${(item.price * item.quantity).toFixed(2)}
+                                                        Rs.{(item.price * item.quantity).toFixed(2)}
                                                     </Typography>
                                                 </Box>
                                             </Box>
@@ -477,7 +477,7 @@ const Header = () => {
                             }}>
                                 <Typography variant="subtitle1">Subtotal</Typography>
                                 <Typography variant="subtitle1" fontWeight="medium">
-                                    ${subtotal.toFixed(2)}
+                                    Rs.{subtotal.toFixed(2)}
                                 </Typography>
                             </Box>
                             <Typography variant="body2" color="text.secondary" sx={{

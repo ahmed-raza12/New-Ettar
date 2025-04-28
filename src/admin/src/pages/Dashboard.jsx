@@ -104,7 +104,7 @@ const Dashboard = () => {
             title="Total Revenue" 
             value={stats.totalRevenue} 
             change={12} // This would be calculated in a real app
-            icon="dollar"
+            icon="rupee"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>

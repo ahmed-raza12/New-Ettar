@@ -32,7 +32,7 @@ const RecentOrders = ({ orders }) => {
               <TableCell>
                 {(new Date(order.createdAt), 'MMM dd, yyyy')}
               </TableCell>
-              <TableCell>${order.total.toFixed(2)}</TableCell>
+              <TableCell>Rs.{order.total.toFixed(2)}</TableCell>
               <TableCell>
                 <Chip
                   label={order.status}

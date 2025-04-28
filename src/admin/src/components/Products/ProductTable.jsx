@@ -106,7 +106,7 @@ const ProductTable = () => {
                   </Typography>
                 </TableCell>
                 <TableCell>{product.category}</TableCell>
-                <TableCell>${product.price.toFixed(2)}</TableCell>
+                <TableCell>Rs.{product.price.toFixed(2)}</TableCell>
                 <TableCell>{product.size}</TableCell>
                 <TableCell>
                   <Chip

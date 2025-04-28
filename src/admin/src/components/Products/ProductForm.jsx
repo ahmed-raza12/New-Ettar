@@ -147,7 +147,7 @@ const handleSubmit = async (e) => {
             <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
-                label="Price ($)"
+                label="Price (Rs.)"
                 name="price"
                 type="number"
                 value={product.price}

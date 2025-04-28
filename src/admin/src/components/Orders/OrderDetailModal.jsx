@@ -83,7 +83,6 @@ const OrderDetailModal = ({ order, onClose }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [animateIn, setAnimateIn] = useState(false);
-  
   useEffect(() => {
     if (order) {
       setAnimateIn(true);
@@ -370,10 +369,10 @@ const OrderDetailModal = ({ order, onClose }) => {
                             mt: { xs: 2, sm: 0 }
                           }}>
                             <Typography variant="body2" color="text.secondary">
-                              Qty: {item.quantity} × ${item.price.toFixed(2)}
+                              Qty: {item.quantity} × Rs.{item.price.toFixed(2)}
                             </Typography>
                             <Typography variant="subtitle1" fontWeight="600">
-                              ${(item.price * item.quantity).toFixed(2)}
+                              Rs.{(item.price * item.quantity).toFixed(2)}
                             </Typography>
                           </Box>
                         </Box>
@@ -408,20 +407,20 @@ const OrderDetailModal = ({ order, onClose }) => {
                     }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body2" color="text.secondary">Subtotal:</Typography>
-                        <Typography>${order.subtotal.toFixed(2)}</Typography>
+                        <Typography>Rs.{order.subtotal.toFixed(2)}</Typography>
                       </Box>
                       
                       {order.tax && (
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                           <Typography variant="body2" color="text.secondary">Tax:</Typography>
-                          <Typography>${order.tax.toFixed(2)}</Typography>
+                          <Typography>Rs.{order.tax.toFixed(2)}</Typography>
                         </Box>
                       )}
                       
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body2" color="text.secondary">Shipping:</Typography>
                         <Typography>
-                          {order.shippingCost ? `$${order.shippingCost.toFixed(2)}` : 'Free'}
+                          {order.shippingCost ? `Rs.${order.shippingCost.toFixed(2)}` : 'Free'}
                         </Typography>
                       </Box>
                       
@@ -429,7 +428,7 @@ const OrderDetailModal = ({ order, onClose }) => {
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                           <Typography variant="body2" color="text.secondary">Discount:</Typography>
                           <Typography color="error.main">
-                            -${order.discount.toFixed(2)}
+                            -Rs.{order.discount.toFixed(2)}
                           </Typography>
                         </Box>
                       )}
@@ -439,7 +438,7 @@ const OrderDetailModal = ({ order, onClose }) => {
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
                         <Typography variant="subtitle1" fontWeight="600">Total:</Typography>
                         <Typography variant="subtitle1" fontWeight="600" color="primary.main">
-                          ${order.total.toFixed(2)}
+                          Rs.{order.total.toFixed(2)}
                         </Typography>
                       </Box>
                     </Box>

@@ -354,7 +354,7 @@ const Orders = () => {
                 Total Revenue
               </Typography>
               <Typography variant="h4" sx={{ mt: 1, fontWeight: 700 }}>
-                ${totalRevenue.toFixed(2)}
+                Rs.{totalRevenue}
               </Typography>
               <Divider sx={{ my: 1.5 }} />
               <Typography variant="body2" color="text.secondary">
@@ -478,7 +478,7 @@ const Orders = () => {
                       })}
                     </TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>
-                      ${order.total.toFixed(2)}
+                      Rs.{order.total.toFixed(2)}
                     </TableCell>
                     <TableCell>
                       <StyledChip

@@ -29,6 +29,7 @@ const CheckoutForm = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [formErrors, setFormErrors] = useState({});
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -39,9 +40,17 @@ const CheckoutForm = () => {
         saveInfo: false,
     });
     const [cartItems, setCartItems] = useState(getCart());
+
+    useEffect(() => {
+        if (!cartItems || cartItems.length === 0) {
+            navigate('/');
+        }
+    }, [cartItems, navigate]);
+
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
+
 
     const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const total = subtotal;
@@ -58,6 +67,27 @@ const CheckoutForm = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
+
+        const errors = {};
+
+        if (!formData.firstName.trim()) errors.firstName = 'First name is required';
+        if (!formData.lastName.trim()) errors.lastName = 'Last name is required';
+        if (!formData.address.trim()) errors.address = 'Address is required';
+        if (!formData.city.trim()) errors.city = 'City is required';
+        const phoneRegex = /^0\d{10}$/; // must start with 0 and have 11 digits
+
+        if (!formData.phone.trim()) {
+            errors.phone = 'Phone number is required';
+        } else if (!phoneRegex.test(formData.phone)) {
+            errors.phone = 'Phone number must be like 03113209078';
+        }
+        if (Object.keys(errors).length > 0) {
+            setFormErrors(errors);
+            setLoading(false);
+            return;
+        }
+
+        setFormErrors({});
 
         try {
             const orderData = {
@@ -86,7 +116,7 @@ const CheckoutForm = () => {
             await createOrder(orderData);
 
             // Clear cart and redirect
-            localStorage.removeItem('cart');
+            localStorage.removeItem('fragranceCart');
             navigate('/order-confirmation', {
                 state: {
                     orderId: orderData.id,
@@ -139,6 +169,8 @@ const CheckoutForm = () => {
                                         value={formData.firstName}
                                         onChange={handleInputChange}
                                         required
+                                        error={Boolean(formErrors.firstName)}
+                                        helperText={formErrors.firstName}
                                     />
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
@@ -149,6 +181,8 @@ const CheckoutForm = () => {
                                         value={formData.lastName}
                                         onChange={handleInputChange}
                                         required
+                                        error={Boolean(formErrors.lastName)}
+                                        helperText={formErrors.lastName}
                                     />
                                 </Grid>
                             </Grid>
@@ -160,6 +194,8 @@ const CheckoutForm = () => {
                                 value={formData.address}
                                 onChange={handleInputChange}
                                 required
+                                error={Boolean(formErrors.address)}
+                                helperText={formErrors.address}
                                 sx={{ mt: 2 }}
                             />
 
@@ -179,7 +215,9 @@ const CheckoutForm = () => {
                                 value={formData.city}
                                 onChange={handleInputChange}
                                 required
+                                error={Boolean(formErrors.city)}
                                 sx={{ mt: 2 }}
+                                helperText={formErrors.city}
                             />
 
                             <TextField
@@ -189,6 +227,8 @@ const CheckoutForm = () => {
                                 value={formData.phone}
                                 onChange={handleInputChange}
                                 required
+                                error={Boolean(formErrors.phone)}
+                                helperText={formErrors.phone}
                                 sx={{ mt: 2 }}
                             />
 
@@ -233,7 +273,7 @@ const CheckoutForm = () => {
                                         </Box>
                                         <Box>
                                             <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
-                                                ${item.price.toFixed(2)}
+                                                Rs.{item.price.toFixed(2)}
                                             </Typography>
                                             <Typography variant="caption" color="text.secondary">
                                                 Qty: {item.quantity}
@@ -246,7 +286,7 @@ const CheckoutForm = () => {
                             <Box sx={{ mb: 3 }}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                                     <Typography variant="body1">Subtotal</Typography>
-                                    <Typography variant="body1">${subtotal.toFixed(2)}</Typography>
+                                    <Typography variant="body1">Rs.{subtotal.toFixed(2)}</Typography>
                                 </Box>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                                     <Typography variant="body1">Shipping</Typography>
@@ -259,7 +299,7 @@ const CheckoutForm = () => {
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
                                 <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Total</Typography>
                                 <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.dark' }}>
-                                    ${total.toFixed(2)}
+                                    Rs.{total.toFixed(2)}
                                 </Typography>
                             </Box>
 

@@ -474,7 +474,7 @@ const ProductsPage = () => {
 
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Typography variant="h6" color="primary" sx={{ fontWeight: 700 }}>
-                                            ${product.price}
+                                            Rs.{product.price}
                                         </Typography>
                                         <Button
                                             variant="contained"
