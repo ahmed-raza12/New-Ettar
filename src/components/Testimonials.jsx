@@ -3,23 +3,23 @@ import { Container, Typography, Grid, Box, Paper, Rating } from '@mui/material';
 const testimonials = [
   {
     id: 1,
-    name: "Sarah Johnson",
-    role: "Fashion Blogger",
-    content: "The Noir Essence has become my signature scent. I receive compliments everywhere I go!",
+    name: "Ayesha Khan",
+    role: "Lifestyle Influencer",
+    content: "Noir Essence meri pehchaan ban chuki hai. Har jagah se taarif milti hai!",
     rating: 5
   },
   {
     id: 2,
-    name: "Michael Chen",
-    role: "Business Executive",
-    content: "I've tried many fragrances over the years, but Citrus Zest is by far the most refreshing and long-lasting.",
+    name: "Omar Farooq",
+    role: "Corporate Manager",
+    content: "Main ne bohat se perfumes try kiye hain, lekin Citrus Zest sabse zyada fresh aur long-lasting hai.",
     rating: 4
   },
   {
     id: 3,
-    name: "Emma Rodriguez",
-    role: "Interior Designer",
-    content: "Floral Bloom is absolutely divine. It's the perfect balance of feminine and sophisticated.",
+    name: "Zainab Ali",
+    role: "Home Decor Consultant",
+    content: "Floral Bloom ek lajawab khushboo hai — naazuk bhi aur classy bhi.",
     rating: 5
   }
 ];

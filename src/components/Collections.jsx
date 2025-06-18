@@ -44,80 +44,7 @@ import {
 import { getCart, removeFromCart, updateCartItem, addToCart } from '../utils/cart';
 import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../admin/src/services/productService';
-
-import product1 from '../assets/product-1.avif';
-import product2 from '../assets/product-2.jpg';
-import product3 from '../assets/product-3.jpg';
-import product4 from '../assets/product-4.webp';
-import product5 from '../assets/product-5.jpg';
-
-
-const products = [
-    {
-      id: 1,
-      name: "Noir Essence",
-      category: "Eau de Parfum",
-      price: 120,
-      image: product1,
-      description: "A bold, mysterious fragrance with notes of black pepper, leather, and sandalwood."
-    },
-    {
-      id: 2,
-      name: "Floral Bloom",
-      category: "Eau de Toilette",
-      price: 95,
-      image: product2,
-      description: "A delicate floral bouquet with hints of jasmine, rose, and peony."
-    },
-    {
-      id: 3,
-      name: "Citrus Zest",
-      category: "Eau de Cologne",
-      price: 85,
-      image: product3,
-      description: "A refreshing burst of citrus with bergamot, lemon, and a touch of vanilla."
-    },
-    {
-      id: 4,
-      name: "Woody Mystique",
-      category: "Eau de Parfum",
-      price: 110,
-      image: product4,
-      description: "Rich woody notes with hints of amber and vanilla for a warm, sensual experience."
-    },
-    {
-      id: 5,
-      name: "Ocean Breeze",
-      category: "Eau de Toilette",
-      price: 90,
-      image: product5,
-      description: "Fresh aquatic notes with marine accords and a hint of citrus."
-    },
-    {
-        id: 6,
-        name: "Noir Essence",
-        category: "Eau de Parfum",
-        price: 120,
-        image: product1,
-        description: "A bold, mysterious fragrance with notes of black pepper, leather, and sandalwood."
-      },
-      {
-        id: 7,
-        name: "Floral Bloom",
-        category: "Eau de Toilette",
-        price: 95,
-        image: product2,
-        description: "A delicate floral bouquet with hints of jasmine, rose, and peony."
-      },
-      {
-        id: 8,
-        name: "Citrus Zest",
-        category: "Eau de Cologne",
-        price: 85,
-        image: product3,
-        description: "A refreshing burst of citrus with bergamot, lemon, and a touch of vanilla."
-      }
-  ];
+import heroImage from '../assets/hero.png';
 
 const LogoText = styled(Typography)(({ theme }) => ({
     fontFamily: 'Playfair Display',
@@ -145,7 +72,7 @@ const ProductsPage = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-  
+
     const [filter, setFilter] = useState('all');
     const [sortBy, setSortBy] = useState('default');
     const [page, setPage] = useState(1);
@@ -155,16 +82,16 @@ const ProductsPage = () => {
 
     useEffect(() => {
         const unsubscribe = getProducts((data) => {
-          setProducts(data);
-          setLoading(false);
+            setProducts(data);
+            setLoading(false);
         }, (error) => {
-          setError('Failed to load products');
-          setLoading(false);
-          console.error(error);
+            setError('Failed to load products');
+            setLoading(false);
+            console.error(error);
         });
-    
+
         return () => unsubscribe();
-      }, []);
+    }, []);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -247,6 +174,10 @@ const ProductsPage = () => {
         return stars;
     };
 
+    const handleProductClick = (productId) => {
+        navigate(`/products/${productId}`);
+    };
+
     return (
         <Box sx={{
             background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%)',
@@ -310,7 +241,9 @@ const ProductsPage = () => {
                             <Typography variant="h2" sx={{
                                 fontFamily: '"Playfair Display", serif',
                                 fontWeight: 'bold',
-                                mb: 2
+                                mb: 2,
+                                fontSize: { xs: '2rem', sm: '3.7rem' },
+
                             }}>
                                 Our Fragrance
                             </Typography>
@@ -318,12 +251,14 @@ const ProductsPage = () => {
                                 fontFamily: '"Playfair Display", serif',
                                 fontWeight: 'bold',
                                 color: 'primary.light',
-                                mb: 3
+                                mb: 3,
+                                fontSize: { xs: '2rem', sm: '3.7rem' },
                             }}>
                                 Collection
                             </Typography>
                             <Typography variant="body1" sx={{
                                 color: 'grey.300',
+                                fontSize: { xs: '1rem', sm: '1.5rem' },
                                 maxWidth: 'md'
                             }}>
                                 Discover our exquisite range of premium fragrances crafted with the finest ingredients from around the world.
@@ -333,7 +268,8 @@ const ProductsPage = () => {
                             display: { xs: 'none', md: 'block' },
                             position: 'relative'
                         }}>
-                            <Box component="img" src="/src/assets/hero.png"
+                            <Box component="img"
+                                src={heroImage}
                                 alt="Perfume bottles"
                                 sx={{
                                     width: '100%',
@@ -400,6 +336,7 @@ const ProductsPage = () => {
                                         boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
                                     }
                                 }}
+                                onClick={() => handleProductClick(product.id)}
                             >
                                 {/* Favorite button */}
                                 <IconButton

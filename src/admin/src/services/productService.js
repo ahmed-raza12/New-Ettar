@@ -6,7 +6,8 @@ import {
   set, 
   onValue, 
   update, 
-  remove 
+  remove,
+  get
 } from 'firebase/database';
 
 export const addProduct = (product) => {
@@ -41,4 +42,24 @@ export const getProducts = (callback) => {
     });
     callback(products);
   });
+};
+
+export const getProductById = async (productId) => {
+  try {
+    const productRef = ref(db, `products/${productId}`);
+    const snapshot = await get(productRef);
+    
+    if (snapshot.exists()) {
+      return {
+        id: snapshot.key,
+        ...snapshot.val()
+      };
+    } else {
+      console.log('No product found with ID:', productId);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    throw error;
+  }
 };

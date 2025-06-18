@@ -9,6 +9,7 @@ import CheckoutForm from './components/Checkout';
 import ProductsPage from './components/Collections';
 import AdminApp from './admin/src/App'; // Import the admin App component
 import OrderConfirmation from './components/OrderConfirmation';
+import ProductDetailsPage from './components/ProductDetailsPage';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -20,12 +21,12 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/" element={<App />} />
           <Route path="/check-out" element={<CheckoutForm />} />
           <Route path="/collections" element={<ProductsPage />} />
+          <Route path="/products/:productId" element={<ProductDetailsPage />} />
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
           
           {/* Admin routes - prefixed with /admin */}
           <Route path="/admin/*" element={<AdminApp />} />
           {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
-
         </Routes>
       </ThemeProvider>
     </BrowserRouter>

@@ -27,7 +27,7 @@ const Footer = () => {
         <Grid container spacing={4}>
           <Grid item xs={12} md={3}>
             <Typography variant="h5" fontWeight="bold" gutterBottom>
-              Scentify
+              UdinFragrance
             </Typography>
             <Typography paragraph sx={{ mb: 2 }}>
               Crafting exceptional fragrances since 2010. Our perfumes are designed to evoke emotions and create lasting memories.
@@ -79,10 +79,10 @@ const Footer = () => {
                 New York, NY 10001
               </Typography> */}
               <Typography paragraph sx={{ mb: 1 }}>
-                Email: info@scentify.com
+                Email: info@udinfragrance.com
               </Typography>
               <Typography>
-                Phone: (555) 123-4567
+                Phone: 0311-1234567
               </Typography>
             </address>
           </Grid>
@@ -91,7 +91,7 @@ const Footer = () => {
         <Divider sx={{ my: 6, bgcolor: 'primary.light' }} />
 
         <Typography variant="body2" align="center">
-          &copy; {new Date().getFullYear()} Scentify. All rights reserved.
+          &copy; {new Date().getFullYear()} UdinFragrance. All rights reserved.
         </Typography>
       </Container>
     </Box>
