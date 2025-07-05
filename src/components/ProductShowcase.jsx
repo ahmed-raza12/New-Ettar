@@ -24,55 +24,6 @@ import { addToCart } from '../utils/cart';
 import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../admin/src/services/productService';
 
-import product1 from '../assets/product-1.avif';
-import product2 from '../assets/product-2.jpg';
-import product3 from '../assets/product-3.jpg';
-import product4 from '../assets/product-4.webp';
-import product5 from '../assets/product-5.jpg';
-const products = [
-  {
-    id: 1,
-    name: "Noir Essence",
-    category: "Eau de Parfum",
-    price: 120,
-    image: product1,
-    description: "A bold, mysterious fragrance with notes of black pepper, leather, and sandalwood."
-  },
-  {
-    id: 2,
-    name: "Floral Bloom",
-    category: "Eau de Toilette",
-    price: 95,
-    image: product2,
-    description: "A delicate floral bouquet with hints of jasmine, rose, and peony."
-  },
-  {
-    id: 3,
-    name: "Citrus Zest",
-    category: "Eau de Cologne",
-    price: 85,
-    image: product3,
-    description: "A refreshing burst of citrus with bergamot, lemon, and a touch of vanilla."
-  },
-  {
-    id: 4,
-    name: "Woody Mystique",
-    category: "Eau de Parfum",
-    price: 110,
-    image: product4,
-    description: "Rich woody notes with hints of amber and vanilla for a warm, sensual experience."
-  },
-  {
-    id: 5,
-    name: "Ocean Breeze",
-    category: "Eau de Toilette",
-    price: 90,
-    image: product5,
-    description: "Fresh aquatic notes with marine accords and a hint of citrus."
-  }
-];
-
-
 const ProductShowcase = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sliding, setSliding] = useState(false);
@@ -165,15 +116,20 @@ const ProductShowcase = () => {
 
     // Preload next image with proper load handling
     const nextIndex = (currentIndex + 1) % products.length;
-    const img = new Image();
+    const product = products[nextIndex];
+    
+    // Get the first image from images array or fallback to image property
+    const imageUrl = Array.isArray(product?.images) && product.images.length > 0 
+      ? product.images[0] 
+      : product?.image;
 
-    // Make sure product exists and has an image property
-    if (!products[nextIndex] || !products[nextIndex].image) {
+    if (!product || !imageUrl) {
       console.error('Missing product or product image at index:', nextIndex);
       setSliding(false);
       return;
     }
 
+    const img = new Image();
     img.onload = () => {
       // Only advance to next slide after image is loaded
       setCurrentIndex(nextIndex);
@@ -184,7 +140,7 @@ const ProductShowcase = () => {
 
     img.onerror = () => {
       // Handle image load error
-      console.error(`Failed to load image for product ${products[nextIndex].name}`);
+      console.error(`Failed to load image for product ${product.name}`);
       setCurrentIndex(nextIndex);
       setTimeout(() => {
         setSliding(false);
@@ -192,7 +148,7 @@ const ProductShowcase = () => {
     };
 
     // Set source after attaching event handlers
-    img.src = products[nextIndex].image;
+    img.src = imageUrl;
   };
 
   // Apply similar safety checks to handlePrev and goToSlide
@@ -202,14 +158,20 @@ const ProductShowcase = () => {
     setSliding(true);
 
     const prevIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
-    const img = new Image();
+    const product = products[prevIndex];
+    
+    // Get the first image from images array or fallback to image property
+    const imageUrl = Array.isArray(product?.images) && product.images.length > 0 
+      ? product.images[0] 
+      : product?.image;
 
-    if (!products[prevIndex] || !products[prevIndex].image) {
+    if (!product || !imageUrl) {
       console.error('Missing product or product image at index:', prevIndex);
       setSliding(false);
       return;
     }
 
+    const img = new Image();
     img.onload = () => {
       setCurrentIndex(prevIndex);
       setTimeout(() => {
@@ -218,20 +180,27 @@ const ProductShowcase = () => {
     };
 
     img.onerror = () => {
-      console.error(`Failed to load image for product ${products[prevIndex].name}`);
+      console.error(`Failed to load image for product ${product.name}`);
       setCurrentIndex(prevIndex);
       setTimeout(() => {
         setSliding(false);
       }, 500);
     };
 
-    img.src = products[prevIndex].image;
+    img.src = imageUrl;
   };
 
   const goToSlide = (index) => {
     if (sliding || index === currentIndex || !products || products.length === 0) return;
+    
+    const product = products[index];
+    
+    // Get the first image from images array or fallback to image property
+    const imageUrl = Array.isArray(product?.images) && product.images.length > 0 
+      ? product.images[0] 
+      : product?.image;
 
-    if (!products[index] || !products[index].image) {
+    if (!product || !imageUrl) {
       console.error('Missing product or product image at index:', index);
       return;
     }
@@ -240,7 +209,6 @@ const ProductShowcase = () => {
     setSliding(true);
 
     const img = new Image();
-
     img.onload = () => {
       setCurrentIndex(index);
       setTimeout(() => {
@@ -653,6 +621,8 @@ const ProductShowcase = () => {
               {visibleProducts.map((product) => (
                 // <Fade key={product.id} in={!sliding} timeout={400}>
                 <Box
+                  key={product.id}
+                  onClick={() => navigate(`/products/${product.id}`)}
                   sx={{
                     width: isMobile ? '90%' : isTablet ? '45%' : '30%',
                     minWidth: isMobile ? '90%' : isTablet ? 300 : 350,
@@ -662,7 +632,8 @@ const ProductShowcase = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    ...getSlideStyle(product.position)
+                    ...getSlideStyle(product.position),
+                    cursor: 'pointer'
                   }}
                 >
                   <Card
@@ -695,6 +666,10 @@ const ProductShowcase = () => {
                     {/* Favorite button */}
                     <IconButton
                       size="small"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent navigation when clicking the favorite button
+                        // Add favorite functionality here if needed
+                      }}
                       sx={{
                         position: 'absolute',
                         top: 12,
@@ -716,8 +691,12 @@ const ProductShowcase = () => {
                     <CardMedia
                       key={`${product.id}-${currentIndex}-${Date.now()}`}
                       component="img"
-                      image={product.image}
+                      image={Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : product.image}
                       alt={product.name}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
+                      }}
                       sx={{
                         height: 300,
                         objectFit: 'cover',
@@ -777,7 +756,10 @@ const ProductShowcase = () => {
                           variant="contained"
                           color="primary"
                           startIcon={<CartIcon />}
-                          onClick={() => handleAddToCart(product)}
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent navigation when clicking the button
+                            handleAddToCart(product);
+                          }}
                           sx={{
                             borderRadius: 6,
                             px: 3,

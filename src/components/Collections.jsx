@@ -361,8 +361,12 @@ const ProductsPage = () => {
 
                                 <CardMedia
                                     component="img"
-                                    image={product.image}
+                                    image={Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : product.image}
                                     alt={product.name}
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
+                                    }}
                                     sx={{
                                         height: 300,
                                         objectFit: 'cover',
@@ -410,14 +414,17 @@ const ProductsPage = () => {
                                     </Typography>
 
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <Typography variant="h6" color="primary" sx={{ fontWeight: 700 }}>
+                                        <Typography variant="body1" color="primary" sx={{ fontWeight: 700 }}>
                                             Rs.{product.price}
                                         </Typography>
                                         <Button
                                             variant="contained"
                                             color="primary"
                                             startIcon={<CartIcon />}
-                                            onClick={() => handleAddToCart(product)}
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Prevent event from bubbling up to the card
+                                                handleAddToCart(product);
+                                            }}
                                             sx={{
                                                 borderRadius: 6,
                                                 px: 3,
@@ -550,7 +557,7 @@ const ProductsPage = () => {
                                         >
                                             <ListItemAvatar sx={{ minWidth: 80 }}>
                                                 <Avatar
-                                                    src={item.image}
+                                                    src={item.images[0]}
                                                     alt={item.name}
                                                     variant="rounded"
                                                     sx={{

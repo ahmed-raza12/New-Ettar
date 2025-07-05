@@ -13,7 +13,8 @@ import {
   IconButton,
   Avatar,
   CircularProgress,
-  Alert
+  Alert,
+  Box
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { getProducts, deleteProduct } from '../../services/productService';
@@ -53,7 +54,9 @@ const ProductTable = () => {
   const handleEdit = (product) => {
     setEditProduct({
       ...product,
-      price: product.price.toString()
+      price: product.price.toString(),
+      // Ensure we have an array of images, fallback to empty array if not present
+      images: Array.isArray(product.images) ? product.images : [product.image || '']
     });
     setOpenForm(true);
   };
@@ -91,11 +94,34 @@ const ProductTable = () => {
             {products.map((product) => (
               <TableRow key={product.id}>
                 <TableCell>
-                  <Avatar
-                    variant="rounded"
-                    src={product.image}
-                    sx={{ width: 56, height: 56 }}
-                  />
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    {Array.isArray(product.images) ? (
+                      product.images.slice(0, 3).map((img, index) => (
+                        img && (
+                          <Avatar
+                            key={index}
+                            variant="rounded"
+                            src={img}
+                            sx={{ width: 40, height: 40, border: '1px solid #ddd' }}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = 'https://via.placeholder.com/40?text=No+Image';
+                            }}
+                          />
+                        )
+                      ))
+                    ) : (
+                      <Avatar
+                        variant="rounded"
+                        src={product.image}
+                        sx={{ width: 40, height: 40, border: '1px solid #ddd' }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://via.placeholder.com/40?text=No+Image';
+                        }}
+                      />
+                    )}
+                  </Box>
                 </TableCell>
                 <TableCell>
                   <Typography variant="body1" fontWeight="medium">
@@ -106,7 +132,7 @@ const ProductTable = () => {
                   </Typography>
                 </TableCell>
                 <TableCell>{product.category}</TableCell>
-                <TableCell>Rs.{product.price.toFixed(2)}</TableCell>
+                <TableCell>Rs.{product.price}</TableCell>
                 <TableCell>{product.size}</TableCell>
                 <TableCell>
                   <Chip

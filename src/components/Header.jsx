@@ -374,7 +374,7 @@ const Header = () => {
                                         >
                                             <ListItemAvatar sx={{ minWidth: 80 }}>
                                                 <Avatar
-                                                    src={item.image}
+                                                    src={item.images[0]}
                                                     alt={item.name}
                                                     variant="rounded"
                                                     sx={{

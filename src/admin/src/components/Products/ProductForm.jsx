@@ -23,7 +23,7 @@ const ProductForm = ({ open, onClose, productToEdit }) => {
     category: '',
     price: '',
     size: '100ml',
-    image: '',
+    images: ['', '', ''],
     description: ''
   });
   const [loading, setLoading] = useState(false);
@@ -36,7 +36,9 @@ const ProductForm = ({ open, onClose, productToEdit }) => {
         category: productToEdit.category || '',
         price: productToEdit.price?.toString() || '',
         size: productToEdit.size || '100ml',
-        image: productToEdit.image || '',
+        images: Array.isArray(productToEdit.images) 
+          ? [...productToEdit.images, '', ''].slice(0, 3) // Ensure we have exactly 3 images
+          : ['', '', ''],
         description: productToEdit.description || ''
       });
     } else {
@@ -46,7 +48,7 @@ const ProductForm = ({ open, onClose, productToEdit }) => {
         category: '',
         price: '',
         size: '100ml',
-        image: '',
+        images: ['', '', ''],
         description: ''
       });
     }
@@ -66,45 +68,43 @@ const ProductForm = ({ open, onClose, productToEdit }) => {
     setProduct(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      // In a real app, you would upload the image to storage first
-      // For now, we'll just use a placeholder
-      setProduct(prev => ({
-        ...prev,
-        image: 'https://via.placeholder.com/150'
-      }));
-    }
+  const handleImageChange = (index, value) => {
+    const newImages = [...product.images];
+    newImages[index] = value;
+    setProduct(prev => ({
+      ...prev,
+      images: newImages
+    }));
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-  try {
-    const productData = {
-      name: product.name,
-      category: product.category,
-      price: Number(product.price),
-      size: product.size,
-      image: product.image,
-      description: product.description
-    };
+    try {
+      const productData = {
+        name: product.name,
+        category: product.category,
+        price: Number(product.price),
+        size: product.size,
+        images: product.images,
+        description: product.description
+      };
 
-    if (productToEdit) {
-      await updateProduct(productToEdit.id, productData);
-    } else {
-      await addProduct(productData);
+      if (productToEdit) {
+        await updateProduct(productToEdit.id, productData);
+      } else {
+        await addProduct(productData);
+      }
+      onClose();
+    } catch (err) {
+      setError('Failed to save product. Please try again.');
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    onClose();
-  } catch (err) {
-    setError('Failed to save product. Please try again.');
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -175,16 +175,45 @@ const handleSubmit = async (e) => {
                 ))}
               </TextField>
             </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Image URL"
-                name="image"
-                value={product.image}
-                onChange={handleChange}
-                margin="normal"
-              />
-            </Grid>
+            {[0, 1, 2].map((index) => (
+              <Grid item xs={12} key={index}>
+                <TextField
+                  fullWidth
+                  label={`Image ${index + 1} URL`}
+                  value={product.images[index] || ''}
+                  onChange={(e) => handleImageChange(index, e.target.value)}
+                  margin="normal"
+                  placeholder={`Enter image ${index + 1} URL`}
+                />
+                {product.images[index] && (
+                  <Box mt={2} mb={2} display="flex" flexDirection="column" alignItems="center">
+                    <Box 
+                      component="img"
+                      src={product.images[index]}
+                      alt={`Preview ${index + 1}`}
+                      sx={{ 
+                        maxWidth: '100%',
+                        maxHeight: 200,
+                        objectFit: 'contain',
+                        border: '1px solid #ddd',
+                        borderRadius: 1,
+                        p: 1,
+                        mt: 1
+                      }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/200x200?text=Image+Not+Found';
+                      }}
+                    />
+                    {!product.images[index].match(/\.(jpeg|jpg|gif|png)$/) && (
+                      <Alert severity="warning" sx={{ mt: 1, width: '100%' }}>
+                        The URL doesn't seem to point to a valid image file
+                      </Alert>
+                    )}
+                  </Box>
+                )}
+              </Grid>
+            ))}
             <Grid item xs={12}>
               <TextField
                 fullWidth

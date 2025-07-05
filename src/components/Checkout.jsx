@@ -105,7 +105,7 @@ const CheckoutForm = () => {
                     name: item.name,
                     price: item.price,
                     quantity: item.quantity,
-                    image: item.image
+                    image: item.images[0]
                 })),
                 subtotal,
                 total,
@@ -259,7 +259,7 @@ const CheckoutForm = () => {
                                 {cartItems.map(item => (
                                     <Box key={item.id} sx={{ display: 'flex', mb: 2, p: 1, '&:hover': { bgcolor: 'action.hover' } }}>
                                         <Avatar
-                                            src={item.image}
+                                            src={item.images[0]}
                                             variant="rounded"
                                             sx={{ width: 60, height: 60, mr: 2 }}
                                         />
