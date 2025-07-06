@@ -183,7 +183,7 @@ const ProductsPage = () => {
             background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%)',
             minHeight: '100vh',
         }}>
-            <AppBar position="sticky" elevation={0} sx={{ bgcolor: 'white', color: 'text.primary' }}>
+            <AppBar position="sticky" elevation={0} sx={{ backgroundColor: '#1C1C1C', color: '#fff' }}>
                 <Toolbar sx={{
                     display: 'flex',
                     justifyContent: 'space-between', // Changed from 'normal' to 'space-between'
@@ -197,7 +197,7 @@ const ProductsPage = () => {
                     <Box>
                         <LogoText
                             component="a"
-                            color='black'
+                            color='#C8A04D'
                             fontSize={{ xs: '0.855rem', md: '1.75rem' }}
                             onClick={() => handleNavigation('home')}
                             sx={{
@@ -206,16 +206,17 @@ const ProductsPage = () => {
                                 flexGrow: 1
                             }}
                         >
-                            𝒰 𝒟𝐼𝒩 𝐹𝑅𝒜𝒢𝑅𝒜𝒩𝒞𝐸
+                            AL MALA
                         </LogoText>
                     </Box>
 
                     {/* Cart Icon - Right aligned */}
                     <Box sx={{ display: 'flex', pr: 2 }}>
-                        <IconButton onClick={toggleCart}>
+                        <IconButton sx={{ color: '#fff' }} onClick={toggleCart}>
                             <CartBadge
                                 badgeContent={cartItems.reduce((total, item) => total + item.quantity, 0)}
                                 color="primary"
+                                sx={{ color: '#fff' }}
                             >
                                 <ShoppingBag />
                             </CartBadge>
@@ -226,8 +227,7 @@ const ProductsPage = () => {
             {/* Hero Section */}
             <Box sx={{
                 position: 'relative',
-                bgcolor: 'black',
-                color: 'white',
+                backgroundImage: 'linear-gradient(50deg, #0f0f0f 60%, #c8a04d 40%)',                color: 'white',
                 mb: 6,
                 overflow: 'hidden'
             }}>
@@ -243,21 +243,21 @@ const ProductsPage = () => {
                                 fontWeight: 'bold',
                                 mb: 2,
                                 fontSize: { xs: '2rem', sm: '3.7rem' },
-
+                                color: '#fff',
                             }}>
                                 Our Fragrance
                             </Typography>
                             <Typography variant="h2" sx={{
                                 fontFamily: '"Playfair Display", serif',
                                 fontWeight: 'bold',
-                                color: 'primary.light',
+                                color: '#c8a04d',
                                 mb: 3,
                                 fontSize: { xs: '2rem', sm: '3.7rem' },
                             }}>
                                 Collection
                             </Typography>
                             <Typography variant="body1" sx={{
-                                color: 'grey.300',
+                                color: '#ddd',
                                 fontSize: { xs: '1rem', sm: '1.5rem' },
                                 maxWidth: 'md'
                             }}>

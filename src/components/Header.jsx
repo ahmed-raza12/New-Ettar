@@ -147,7 +147,7 @@ const Header = () => {
                 position="sticky"
                 elevation={0}
                 sx={{
-                    backgroundColor: 'white',
+                    backgroundColor: '#1C1C1C',
                     borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
                     zIndex: 1200
                 }}
@@ -160,13 +160,13 @@ const Header = () => {
                     }}>
                         {/* Left Navigation - Desktop */}
                         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 4 }}>
-                            <NavLink onClick={() => handleNavigation('home')}>Home</NavLink>
-                            <NavLink onClick={() => handleNavigation('products')}>Products</NavLink>
+                            <NavLink sx={{ color: '#fff' }} onClick={() => handleNavigation('home')}>Home</NavLink>
+                            <NavLink sx={{ color: '#fff' }} onClick={() => handleNavigation('products')}>Products</NavLink>
                         </Box>
 
                         {/* Mobile Menu Button */}
                         <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-                            <IconButton onClick={toggleMobileMenu}>
+                            <IconButton sx={{ color: '#fff' }} onClick={toggleMobileMenu}>
                                 {mobileMenuOpen ? <Close /> : <Menu />}
                             </IconButton>
                         </Box>
@@ -182,12 +182,12 @@ const Header = () => {
                         }}>
                             <LogoText
                                 component="a"
-                                color='black'
+                                color='#C8A04D'
                                 fontSize={{ xs: '0.855rem', md: '1.75rem' }}
                                 onClick={() => handleNavigation('home')}
                                 sx={{ cursor: 'pointer' }}
                             >
-                                𝒰 𝒟𝐼𝒩 𝐹𝑅𝒜𝒢𝑅𝒜𝒩𝒞𝐸
+                                AL MALA
                             </LogoText>
                         </Box>
 
@@ -195,13 +195,14 @@ const Header = () => {
                         <Box sx={{
                             display: { xs: 'none', md: 'flex' },
                             gap: 4,
+                            color: '#fff',
                             alignItems: 'center'
                         }}>
-                            <NavLink onClick={() => handleNavigation('stories')}>Stories</NavLink>
-                            <NavLink onClick={() => handleNavigation('contact')}>Contact</NavLink>
+                            <NavLink sx={{ color: '#fff' }} onClick={() => handleNavigation('stories')}>Stories</NavLink>
+                            <NavLink sx={{ color: '#fff' }} onClick={() => handleNavigation('contact')}>Contact</NavLink>
 
                             {/* Update both cart icons in the header */}
-                            <IconButton onClick={toggleCart}>
+                            <IconButton sx={{ color: '#fff' }} onClick={toggleCart}>
                                 <CartBadge
                                     badgeContent={cartItems.reduce((total, item) => total + item.quantity, 0)}
                                     color="primary"
@@ -213,7 +214,7 @@ const Header = () => {
 
                         {/* Cart Icon - Mobile */}
                         <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-                            <IconButton onClick={toggleCart}>
+                            <IconButton sx={{ color: '#fff' }} onClick={toggleCart}>
                                 <CartBadge
                                     badgeContent={cartItems.reduce((total, item) => total + item.quantity, 0)}
                                     color="primary"
@@ -233,7 +234,7 @@ const Header = () => {
                                     primaryTypographyProps={{
                                         textTransform: 'uppercase',
                                         fontSize: '0.875rem',
-                                        color: '#000',
+                                        color: '#fff',
                                         fontWeight: 500
                                     }}
                                 />
@@ -246,7 +247,7 @@ const Header = () => {
                                     primaryTypographyProps={{
                                         textTransform: 'uppercase',
                                         fontSize: '0.875rem',
-                                        color: '#000',
+                                        color: '#fff',
                                         fontWeight: 500
                                     }}
                                 />
@@ -259,7 +260,7 @@ const Header = () => {
                                     primaryTypographyProps={{
                                         textTransform: 'uppercase',
                                         fontSize: '0.875rem',
-                                        color: '#000',
+                                        color: '#fff',
                                         fontWeight: 500
                                     }}
                                 />
@@ -272,7 +273,7 @@ const Header = () => {
                                     primaryTypographyProps={{
                                         textTransform: 'uppercase',
                                         fontSize: '0.875rem',
-                                        color: '#000',
+                                        color: '#fff',
                                         fontWeight: 500
                                     }}
                                 />

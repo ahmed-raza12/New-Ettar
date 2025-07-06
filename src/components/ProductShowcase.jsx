@@ -109,122 +109,80 @@ const ProductShowcase = () => {
     setAutoPlay(true);
   };
 
+  // Preload images for smoother transitions
+  const preloadImages = () => {
+    if (!products || products.length === 0) return;
+    
+    // Preload next and previous images
+    const nextIndex = (currentIndex + 1) % products.length;
+    const prevIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
+    
+    [nextIndex, prevIndex].forEach(index => {
+      const product = products[index];
+      if (!product) return;
+      
+      const imageUrl = Array.isArray(product.images) && product.images.length > 0 
+        ? product.images[0] 
+        : product.image;
+      
+      if (imageUrl) {
+        const img = new Image();
+        img.src = imageUrl;
+      }
+    });
+  };
+
+  // Preload images when component mounts or products change
+  useEffect(() => {
+    preloadImages();
+  }, [products, currentIndex]);
+
   const handleNext = () => {
     if (sliding || !products || products.length === 0) return;
+    
+    const nextIndex = (currentIndex + 1) % products.length;
     setDirection('next');
     setSliding(true);
 
-    // Preload next image with proper load handling
-    const nextIndex = (currentIndex + 1) % products.length;
-    const product = products[nextIndex];
-    
-    // Get the first image from images array or fallback to image property
-    const imageUrl = Array.isArray(product?.images) && product.images.length > 0 
-      ? product.images[0] 
-      : product?.image;
-
-    if (!product || !imageUrl) {
-      console.error('Missing product or product image at index:', nextIndex);
-      setSliding(false);
-      return;
-    }
-
-    const img = new Image();
-    img.onload = () => {
-      // Only advance to next slide after image is loaded
+    // Use requestAnimationFrame for smoother animations
+    requestAnimationFrame(() => {
       setCurrentIndex(nextIndex);
       setTimeout(() => {
         setSliding(false);
-      }, 500);
-    };
-
-    img.onerror = () => {
-      // Handle image load error
-      console.error(`Failed to load image for product ${product.name}`);
-      setCurrentIndex(nextIndex);
-      setTimeout(() => {
-        setSliding(false);
-      }, 500);
-    };
-
-    // Set source after attaching event handlers
-    img.src = imageUrl;
+      }, 400); // Match this with the CSS transition duration
+    });
   };
 
   // Apply similar safety checks to handlePrev and goToSlide
   const handlePrev = () => {
     if (sliding || !products || products.length === 0) return;
+    
+    const prevIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
     setDirection('prev');
     setSliding(true);
 
-    const prevIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
-    const product = products[prevIndex];
-    
-    // Get the first image from images array or fallback to image property
-    const imageUrl = Array.isArray(product?.images) && product.images.length > 0 
-      ? product.images[0] 
-      : product?.image;
-
-    if (!product || !imageUrl) {
-      console.error('Missing product or product image at index:', prevIndex);
-      setSliding(false);
-      return;
-    }
-
-    const img = new Image();
-    img.onload = () => {
+    // Use requestAnimationFrame for smoother animations
+    requestAnimationFrame(() => {
       setCurrentIndex(prevIndex);
       setTimeout(() => {
         setSliding(false);
-      }, 500);
-    };
-
-    img.onerror = () => {
-      console.error(`Failed to load image for product ${product.name}`);
-      setCurrentIndex(prevIndex);
-      setTimeout(() => {
-        setSliding(false);
-      }, 500);
-    };
-
-    img.src = imageUrl;
+      }, 400); // Match this with the CSS transition duration
+    });
   };
 
   const goToSlide = (index) => {
     if (sliding || index === currentIndex || !products || products.length === 0) return;
     
-    const product = products[index];
-    
-    // Get the first image from images array or fallback to image property
-    const imageUrl = Array.isArray(product?.images) && product.images.length > 0 
-      ? product.images[0] 
-      : product?.image;
-
-    if (!product || !imageUrl) {
-      console.error('Missing product or product image at index:', index);
-      return;
-    }
-
     setDirection(index > currentIndex ? 'next' : 'prev');
     setSliding(true);
 
-    const img = new Image();
-    img.onload = () => {
+    // Use requestAnimationFrame for smoother animations
+    requestAnimationFrame(() => {
       setCurrentIndex(index);
       setTimeout(() => {
         setSliding(false);
-      }, 400);
-    };
-
-    img.onerror = () => {
-      console.error(`Failed to load image for product ${products[index].name}`);
-      setCurrentIndex(index);
-      setTimeout(() => {
-        setSliding(false);
-      }, 400);
-    };
-
-    img.src = products[index].image;
+      }, 400); // Match this with the CSS transition duration
+    });
   };
 
   // Update the preloadAllImages function with safety checks
@@ -310,34 +268,56 @@ const ProductShowcase = () => {
 
   const visibleProducts = getVisibleProducts();
 
-  // Enhanced slide animation styles
+  // Enhanced slide animation styles with optimized transitions
   const getSlideStyle = (position) => {
+    const transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+    
     if (isMobile) {
       if (sliding) {
         return {
           transform: direction === 'next' ? 'translateX(-100%)' : 'translateX(100%)',
           opacity: 0,
-          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+          transition,
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
+          willChange: 'transform, opacity',
+          transformStyle: 'preserve-3d'
         };
       }
       return {
         transform: 'translateX(0)',
         opacity: 1,
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+        transition,
+        position: 'relative',
+        backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden',
+        willChange: 'transform, opacity',
+        transformStyle: 'preserve-3d'
       };
     } else if (isTablet) {
-      // Tablet styles
+      // Tablet styles with hardware acceleration
       const baseStyles = {
         transform: position === 'center-left' ? 'translateX(5%)' : 'translateX(-5%)',
         opacity: 1,
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+        transition,
+        backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden',
+        willChange: 'transform, opacity',
+        transformStyle: 'preserve-3d',
+        position: 'relative'
       };
 
       if (sliding) {
         return {
           ...baseStyles,
           transform: direction === 'next' ? 'translateX(-100%)' : 'translateX(100%)',
-          opacity: 0
+          opacity: 0,
+          position: 'absolute',
+          width: '100%',
+          height: '100%'
         };
       }
       return baseStyles;
@@ -688,29 +668,40 @@ const ProductShowcase = () => {
                       <FavoriteIcon fontSize="small" />
                     </IconButton>
 
-                    <CardMedia
-                      key={`${product.id}-${currentIndex}-${Date.now()}`}
-                      component="img"
-                      image={Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : product.image}
-                      alt={product.name}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
-                      }}
-                      sx={{
-                        height: 300,
-                        objectFit: 'cover',
-                        transition: 'all 0.5s',
-                        willChange: 'transform',
-                        backfaceVisibility: 'hidden',
-                        transform: 'translateZ(0)',
-                        '&:hover': {
-                          transform: 'scale(1.03) translateZ(0)'
-                        }
-                      }}
-                      loading="eager"
-                      decoding="async"
-                    />
+                    <Box sx={{
+                      position: 'relative',
+                      width: '100%',
+                      height: 300,
+                      overflow: 'hidden',
+                      backgroundColor: 'background.paper',
+                      '&:hover img': {
+                        transform: 'scale(1.03)'
+                      }
+                    }}>
+                      <img
+                        src={Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : product.image}
+                        alt={product.name}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
+                        }}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                          backfaceVisibility: 'hidden',
+                          WebkitBackfaceVisibility: 'hidden',
+                          willChange: 'transform',
+                          transform: 'translateZ(0)',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0
+                        }}
+                        loading="eager"
+                        decoding="async"
+                      />
+                    </Box>
                     <CardContent sx={{ flexGrow: 1, p: 3, position: 'relative', zIndex: 1 }}>
                       <Typography
                         variant="overline"

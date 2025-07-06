@@ -26,7 +26,7 @@ const testimonials = [
 
 const Testimonials = () => {
   return (
-    <Box sx={{ py: 10, bgcolor: 'secondary.main' }}>
+    <Box sx={{ py: 10, backgroundImage: 'linear-gradient(60deg, #0f0f0f 60%, #c8a04d 100%)', }}>
       <Container>
         <Typography
           variant="h2"
@@ -46,7 +46,7 @@ const Testimonials = () => {
               md: '3rem',    // Medium screens (tablets)
               lg: '3.5rem',  // Large screens (desktop)
             },
-            backgroundImage: 'linear-gradient(45deg, #333, #666)',
+            backgroundImage: 'linear-gradient(135deg, #c8a04d 10%, #ffffff 70%)',
             backgroundClip: 'text',
             color: 'transparent',
             '&:after': {
@@ -61,7 +61,7 @@ const Testimonials = () => {
                 md: 100, // Full width line on desktop
               },
               height: 3,
-              backgroundImage: 'linear-gradient(to right, #333, #666)',
+              backgroundImage: 'linear-gradient(135deg, #fff 10%, #c8a04d 100%)',
               borderRadius: 4
             }
           }}

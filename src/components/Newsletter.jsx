@@ -28,7 +28,7 @@ const FragranceCircle = () => {
               md: '3rem',
               lg: '3.5rem',
             },
-            backgroundImage: 'linear-gradient(45deg, #fff, #eee)',
+            backgroundImage: 'linear-gradient(135deg, #fff 10%, #c8a04d 100%)',
             backgroundClip: 'text',
             color: 'transparent',
           }}
