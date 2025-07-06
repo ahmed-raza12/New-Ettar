@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logo from '../assets/logo.png';
 import {
     AppBar,
     Toolbar,
@@ -139,7 +140,7 @@ const Header = () => {
 
     return (
         <>
-            <AnnouncementBar>
+            <AnnouncementBar sx={{ backgroundColor: '#C8A04D', color: '#1C1C1C', fontSize: '0.70rem' }}>
                 Free countrywide shipping on orders | 30-day returns
             </AnnouncementBar>
 
@@ -172,24 +173,34 @@ const Header = () => {
                         </Box>
 
                         {/* Logo */}
-                        <Box sx={{
+                        {/* <Box sx={{
                             flex: 1,
                             textAlign: 'center',
                             [theme.breakpoints.up('md')]: {
                                 flex: 'none',
                                 width: 'auto'
                             }
-                        }}>
-                            <LogoText
-                                component="a"
-                                color='#C8A04D'
-                                fontSize={{ xs: '0.855rem', md: '1.75rem' }}
+                        }}> */}
+                            <Box
+                                component="img"
+                                src={logo}
+                                alt="AL MALA Logo"
                                 onClick={() => handleNavigation('home')}
-                                sx={{ cursor: 'pointer' }}
-                            >
-                                AL MALA
-                            </LogoText>
-                        </Box>
+                                sx={{
+                                    height: { xs: 60, md: 80 },
+                                    maxHeight: { xs: 80, md: 100 },
+                                    // height: 'auto',
+                                    width: 'auto',
+                                    cursor: 'pointer',
+                                    objectFit: 'cover',
+                                    maxWidth: '100%',
+                                    transition: 'transform 0.3s ease',
+                                    '&:hover': {
+                                        transform: 'scale(1.20)'
+                                    }
+                                }}
+                            />
+                        {/* </Box> */}
 
                         {/* Right Navigation - Desktop */}
                         <Box sx={{
@@ -205,7 +216,7 @@ const Header = () => {
                             <IconButton sx={{ color: '#fff' }} onClick={toggleCart}>
                                 <CartBadge
                                     badgeContent={cartItems.reduce((total, item) => total + item.quantity, 0)}
-                                    color="primary"
+                                    color="secondary"
                                 >
                                     <ShoppingBag />
                                 </CartBadge>
@@ -217,7 +228,8 @@ const Header = () => {
                             <IconButton sx={{ color: '#fff' }} onClick={toggleCart}>
                                 <CartBadge
                                     badgeContent={cartItems.reduce((total, item) => total + item.quantity, 0)}
-                                    color="primary"
+                                    color="secondary"
+
                                 >
                                     <ShoppingBag />
                                 </CartBadge>

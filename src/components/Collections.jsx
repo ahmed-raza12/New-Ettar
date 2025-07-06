@@ -45,6 +45,7 @@ import { getCart, removeFromCart, updateCartItem, addToCart } from '../utils/car
 import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../admin/src/services/productService';
 import heroImage from '../assets/hero.png';
+import logo from '../assets/logo.png';
 
 const LogoText = styled(Typography)(({ theme }) => ({
     fontFamily: 'Playfair Display',
@@ -195,19 +196,25 @@ const ProductsPage = () => {
 
                     {/* Centered Logo */}
                     <Box>
-                        <LogoText
-                            component="a"
-                            color='#C8A04D'
-                            fontSize={{ xs: '0.855rem', md: '1.75rem' }}
+                        <Box
+                            component="img"
+                            src={logo}
+                            alt="AL MALA Logo"
                             onClick={() => handleNavigation('home')}
                             sx={{
+                                height: { xs: 70, md: 90 },
+                                maxHeight: { xs: 90, md: 120 },
+                                // height: 'auto',
+                                width: 'auto',
                                 cursor: 'pointer',
-                                textAlign: 'center',
-                                flexGrow: 1
+                                objectFit: 'cover',
+                                maxWidth: '100%',
+                                transition: 'transform 0.3s ease',
+                                '&:hover': {
+                                    transform: 'scale(1.20)'
+                                }
                             }}
-                        >
-                            AL MALA
-                        </LogoText>
+                        />
                     </Box>
 
                     {/* Cart Icon - Right aligned */}
@@ -215,7 +222,7 @@ const ProductsPage = () => {
                         <IconButton sx={{ color: '#fff' }} onClick={toggleCart}>
                             <CartBadge
                                 badgeContent={cartItems.reduce((total, item) => total + item.quantity, 0)}
-                                color="primary"
+                                color="secondary"
                                 sx={{ color: '#fff' }}
                             >
                                 <ShoppingBag />
@@ -227,7 +234,7 @@ const ProductsPage = () => {
             {/* Hero Section */}
             <Box sx={{
                 position: 'relative',
-                backgroundImage: 'linear-gradient(50deg, #0f0f0f 60%, #c8a04d 40%)',                color: 'white',
+                backgroundImage: 'linear-gradient(50deg, #0f0f0f 60%, #c8a04d 40%)', color: 'white',
                 mb: 6,
                 overflow: 'hidden'
             }}>

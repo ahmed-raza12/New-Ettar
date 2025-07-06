@@ -24,6 +24,7 @@ import {
 import { getCart } from '../utils/cart';
 import { createOrder } from '../admin/src/services/orderService';
 import { useNavigate } from 'react-router-dom';
+import logo from '../assets/logo.png';
 
 const CheckoutForm = () => {
     const navigate = useNavigate();
@@ -136,11 +137,27 @@ const CheckoutForm = () => {
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Avatar sx={{ bgcolor: 'primary.dark', mr: 2 }}>
-                        <Spa />
-                    </Avatar>
+                    <Box
+                        component="img"
+                        src={logo}
+                        alt="AL MALA Logo"
+                        onClick={() => handleNavigation('home')}
+                        sx={{
+                            height: { xs: 60, md: 80 },
+                            maxHeight: { xs: 80, md: 100 },
+                            // height: 'auto',
+                            width: 'auto',
+                            cursor: 'pointer',
+                            objectFit: 'cover',
+                            maxWidth: '100%',
+                            transition: 'transform 0.3s ease',
+                            '&:hover': {
+                                transform: 'scale(1.20)'
+                            }
+                        }}
+                    />
                     <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.dark' }}>
-                        Essence Luxe
+                        AL MALA
                     </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
