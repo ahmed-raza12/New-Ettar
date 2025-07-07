@@ -161,8 +161,8 @@ const Header = () => {
                     }}>
                         {/* Left Navigation - Desktop */}
                         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 4 }}>
-                            <NavLink sx={{ color: '#fff' }} onClick={() => handleNavigation('home')}>Home</NavLink>
-                            <NavLink sx={{ color: '#fff' }} onClick={() => handleNavigation('products')}>Products</NavLink>
+                            <NavLink sx={{ color: '#fff', fontFamily: 'Playfair Display' }} onClick={() => handleNavigation('home')}>Home</NavLink>
+                            <NavLink sx={{ color: '#fff', fontFamily: 'Playfair Display' }} onClick={() => handleNavigation('products')}>Products</NavLink>
                         </Box>
 
                         {/* Mobile Menu Button */}
@@ -187,8 +187,8 @@ const Header = () => {
                                 alt="AL MALA Logo"
                                 onClick={() => handleNavigation('home')}
                                 sx={{
-                                    height: { xs: 60, md: 80 },
-                                    maxHeight: { xs: 80, md: 100 },
+                                    height: { xs: 40, md: 60 },
+                                    maxHeight: { xs: 60, md: 80 },
                                     // height: 'auto',
                                     width: 'auto',
                                     cursor: 'pointer',
@@ -209,8 +209,8 @@ const Header = () => {
                             color: '#fff',
                             alignItems: 'center'
                         }}>
-                            <NavLink sx={{ color: '#fff' }} onClick={() => handleNavigation('stories')}>Stories</NavLink>
-                            <NavLink sx={{ color: '#fff' }} onClick={() => handleNavigation('contact')}>Contact</NavLink>
+                            <NavLink sx={{ color: '#fff', fontFamily: 'Playfair Display' }} onClick={() => handleNavigation('stories')}>Stories</NavLink>
+                            <NavLink sx={{ color: '#fff', fontFamily: 'Playfair Display' }} onClick={() => handleNavigation('contact')}>Contact</NavLink>
 
                             {/* Update both cart icons in the header */}
                             <IconButton sx={{ color: '#fff' }} onClick={toggleCart}>

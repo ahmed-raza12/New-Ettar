@@ -44,7 +44,7 @@ import {
 import { getCart, removeFromCart, updateCartItem, addToCart } from '../utils/cart';
 import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../admin/src/services/productService';
-import heroImage from '../assets/hero.png';
+import heroImage from '../assets/hero.jpg';
 import logo from '../assets/logo.png';
 
 const LogoText = styled(Typography)(({ theme }) => ({

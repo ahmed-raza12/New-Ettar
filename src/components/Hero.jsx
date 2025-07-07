@@ -1,6 +1,6 @@
 import { Box, Typography, Button, Container, useMediaQuery, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import heroImage from '../assets/hero.png';
+import heroImage from '../assets/hero.jpg';
 
 const Hero = () => {
   const theme = useTheme();
@@ -28,7 +28,7 @@ const Hero = () => {
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
+          background: 'linear-gradient(135deg, rgba(67, 65, 65, 0.6) 0%, rgba(0,0,0,0) 100%)',
           zIndex: 1
         }}
       />
@@ -82,13 +82,14 @@ const Hero = () => {
               fontSize: { 
                 xs: '2.2rem',
                 sm: '3rem', 
-                md: '4rem' 
+                md: '3.2rem' 
               },
               lineHeight: 1.1,
               fontWeight: 600,
               mb: { xs: 2, sm: 3 },
               letterSpacing: '-0.02em',
-              textShadow: '0px 2px 4px rgba(0,0,0,0.2)'
+              color: '#C8A04D',
+              textShadow: '0px 2px 4px #000000'
             }}
           >
             Discover Your Signature Scent
@@ -127,7 +128,8 @@ const Hero = () => {
                 px: { xs: 4, sm: 5 },
                 py: { xs: 1.2, sm: 1.5 },
                 borderRadius: '2px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                color: '#C8A04D',
+                boxShadow: '0 4px 12px rgba(244, 146, 146, 0.15)',
                 fontSize: { xs: '0.9rem', sm: '1rem' },
                 fontWeight: 500,
                 letterSpacing: '0.05em',
@@ -141,8 +143,8 @@ const Hero = () => {
             <Button 
               variant="outlined" 
               sx={{ 
-                color: 'common.white', 
-                borderColor: 'common.white',
+                color: '#C8A04D', 
+                borderColor: '#C8A04D',
                 borderWidth: '1.5px',
                 px: { xs: 4, sm: 5 },
                 py: { xs: 1.2, sm: 1.5 },
@@ -153,8 +155,9 @@ const Hero = () => {
                 textTransform: 'uppercase',
                 whiteSpace: 'nowrap',
                 '&:hover': {
-                  bgcolor: 'rgba(255,255,255,0.1)',
-                  borderColor: 'common.white',
+                  bgcolor: '#C8A04D',
+                  borderColor: '#C8A04D',
+                  color: '#fff',
                   borderWidth: '1.5px'
                 },
                 transition: 'all 0.3s ease'
