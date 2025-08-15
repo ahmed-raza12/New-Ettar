@@ -2,7 +2,8 @@ import { Container, Box, Grid, Typography, Link, Divider } from '@mui/material';
 import {
   Facebook as FacebookIcon,
   Instagram as InstagramIcon,
-  Twitter as TwitterIcon
+  Twitter as TwitterIcon,
+  WhatsApp as WhatsAppIcon
 } from '@mui/icons-material';
 
 const footerLinks = [
@@ -27,20 +28,20 @@ const Footer = () => {
         <Grid container spacing={4}>
           <Grid item xs={12} md={3}>
             <Typography variant="h5" fontWeight="bold" gutterBottom>
-              UdinFragrance
+              AlMala Fragrance
             </Typography>
             <Typography paragraph sx={{ mb: 2 }}>
-              Crafting exceptional fragrances since 2010. Our perfumes are designed to evoke emotions and create lasting memories.
+              Crafting exceptional fragrances. Our perfumes are designed to evoke emotions and create lasting memories.
             </Typography>
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <Link href="#" color="inherit">
+              <Link href="https://www.facebook.com/almalafragrance/" target="_blank" color="inherit">
                 <FacebookIcon />
               </Link>
-              <Link href="#" color="inherit">
+              <Link href="https://www.instagram.com/almalafragrance/" target="_blank" color="inherit">
                 <InstagramIcon />
               </Link>
-              <Link href="#" color="inherit">
-                <TwitterIcon />
+              <Link href="https://wa.me/923283601150" target="_blank" color="inherit">
+                <WhatsAppIcon />
               </Link>
             </Box>
           </Grid>
@@ -79,10 +80,10 @@ const Footer = () => {
                 New York, NY 10001
               </Typography> */}
               <Typography paragraph sx={{ mb: 1 }}>
-                Email: info@udinfragrance.com
+                Email: almalafragnance@gmail.com
               </Typography>
               <Typography>
-                Phone: 0311-1234567
+                Phone: +92 328 3601150
               </Typography>
             </address>
           </Grid>
@@ -91,7 +92,7 @@ const Footer = () => {
         <Divider sx={{ my: 6, bgcolor: 'primary.light' }} />
 
         <Typography variant="body2" align="center">
-          &copy; {new Date().getFullYear()} UdinFragrance. All rights reserved.
+          &copy; {new Date().getFullYear()} Almala Fragrance. All rights reserved.
         </Typography>
       </Container>
     </Box>

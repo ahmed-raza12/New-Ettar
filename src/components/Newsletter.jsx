@@ -44,7 +44,7 @@ const FragranceCircle = () => {
         {/* WhatsApp Button */}
         <Box sx={{ textAlign: 'center', mt: 4 }}>
           <Link
-            href="https://wa.me/+1234567890" // Replace with your WhatsApp Channel or number
+            href="https://whatsapp.com/channel/0029VbBSuJV7tkj4wrCNAr2Z" // Replace with your WhatsApp Channel or number
             target="_blank"
             rel="noopener noreferrer"
             sx={{

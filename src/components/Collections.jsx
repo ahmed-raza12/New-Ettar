@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
     AppBar,
     Toolbar,
@@ -23,8 +24,11 @@ import {
     ListItemText, Snackbar,
     Drawer, ListItemAvatar, Avatar,
     useTheme,
-    useMediaQuery
+    useMediaQuery,
+    Breadcrumbs,
+    Link as MuiLink
 } from '@mui/material';
+import { Link } from 'react-router-dom';
 import {
     FavoriteBorder,
     Star,
@@ -66,6 +70,53 @@ const CartBadge = styled(Badge)({
         fontSize: '0.625rem'
     }
 });
+// Generate breadcrumb structured data
+const generateBreadcrumbData = () => ({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+        {
+            '@type': 'ListItem',
+            'position': 1,
+            'name': 'Home',
+            'item': 'https://almalafragrance.com/'
+        },
+        {
+            '@type': 'ListItem',
+            'position': 2,
+            'name': 'Collections',
+            'item': 'https://almalafragrance.com/collections'
+        }
+    ]
+});
+
+// Generate product list structured data
+const generateProductListData = (products) => ({
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    'itemListElement': products.map((product, index) => ({
+        '@type': 'ListItem',
+        'position': index + 1,
+        'item': {
+            '@type': 'Product',
+            'name': product.name,
+            'url': `https://almalafragrance.com/products/${product.id}`,
+            'image': product.imageUrl || 'https://almalafragrance.com/placeholder.jpg',
+            'description': product.description || 'Premium fragrance from AlMala Fragrance',
+            'brand': {
+                '@type': 'Brand',
+                'name': 'AlMala Fragrance'
+            },
+            'offers': {
+                '@type': 'Offer',
+                'price': product.price,
+                'priceCurrency': 'PKR',
+                'availability': product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
+            }
+        }
+    }))
+});
+
 const ProductsPage = () => {
     const navigate = useNavigate();
     const theme = useTheme();
@@ -179,11 +230,40 @@ const ProductsPage = () => {
         navigate(`/products/${productId}`);
     };
 
+    // Generate current page URL for canonical
+    const currentUrl = window.location.href;
+    const pageTitle = 'Premium Fragrance Collections | AlMala Fragrance';
+    const pageDescription = 'Explore our exclusive collection of premium fragrances. Find your perfect scent with our wide range of long-lasting perfumes and attars.';
+
+    // Get current filter for meta description
+    const filterDescription = filter === 'all' ? '' : ` ${filter} `;
+
     return (
-        <Box sx={{
+        <Box component="main" sx={{
             background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%)',
             minHeight: '100vh',
         }}>
+            {/* SEO Meta Tags */}
+            <Helmet>
+                <title>{pageTitle}</title>
+                <meta name="description" content={pageDescription} />
+                <link rel="canonical" href={currentUrl} />
+                <meta property="og:title" content={pageTitle} />
+                <meta property="og:description" content={pageDescription} />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={currentUrl} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={pageTitle} />
+                <meta name="twitter:description" content={pageDescription} />
+
+                {/* Structured Data */}
+                <script type="application/ld+json">
+                    {JSON.stringify(generateBreadcrumbData())}
+                </script>
+                <script type="application/ld+json">
+                    {JSON.stringify(generateProductListData(paginatedProducts))}
+                </script>
+            </Helmet>
             <AppBar position="sticky" elevation={0} sx={{ backgroundColor: '#1C1C1C', color: '#fff' }}>
                 <Toolbar sx={{
                     display: 'flex',
@@ -215,6 +295,8 @@ const ProductsPage = () => {
                                 }
                             }}
                         />
+                        <meta itemProp="brand" content="AlMala Fragrance" />
+                        <meta itemProp="category" content="Perfume" />
                     </Box>
 
                     {/* Cart Icon - Right aligned */}
@@ -318,71 +400,58 @@ const ProductsPage = () => {
                             height: '100%',
                         }} item xs={12} sm={6} md={4} lg={3} key={product.id}>
                             <Card
+                                component="article"
+                                itemScope
+                                itemType="https://schema.org/Product"
+                                onClick={() => navigate(`/products/${product.id}`)}
                                 sx={{
-                                    width: '100%',
-                                    height: '90%',
+                                    height: '100%',
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
-                                    borderRadius: 3,
-                                    position: 'relative',
-                                    overflow: 'hidden',
-                                    transition: 'all 0.3s',
-                                    '&::before': {
-                                        content: '""',
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 0,
-                                        width: '100%',
-                                        height: '100%',
-                                        background: 'linear-gradient(to bottom, rgba(0,0,0,0) 70%, rgba(0,0,0,0.02) 100%)',
-                                        zIndex: 0
-                                    },
+                                    transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
                                     '&:hover': {
-                                        transform: product.position === 'center' ? 'translateY(-10px)' : 'translateY(-5px)',
-                                        boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
+                                        transform: 'translateY(-5px)',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
                                     }
                                 }}
-                                onClick={() => handleProductClick(product.id)}
                             >
-                                {/* Favorite button */}
-                                <IconButton
-                                    size="small"
-                                    sx={{
-                                        position: 'absolute',
-                                        top: 12,
-                                        right: 12,
-                                        bgcolor: 'rgba(255,255,255,0.9)',
-                                        backdropFilter: 'blur(5px)',
-                                        zIndex: 2,
-                                        transition: 'all 0.2s',
-                                        '&:hover': {
-                                            bgcolor: 'primary.light',
-                                            color: 'primary.main',
-                                            transform: 'scale(1.1)'
-                                        }
-                                    }}
-                                >
-                                    <FavoriteBorder fontSize="small" />
-                                </IconButton>
-
-                                <CardMedia
-                                    component="img"
-                                    image={Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : product.image}
-                                    alt={product.name}
-                                    onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
-                                    }}
-                                    sx={{
-                                        height: 300,
-                                        objectFit: 'cover',
-                                        transition: 'all 0.5s',
-                                        '&:hover': {
-                                            transform: 'scale(1.03)'
-                                        }
-                                    }}
-                                />
+                                <meta itemProp="brand" content="AlMala Fragrance" />
+                                <meta itemProp="category" content={product.category || 'Perfume'} />
+                                <Box sx={{
+                                    position: 'relative',
+                                    width: '100%',
+                                    height: 300,
+                                    overflow: 'hidden',
+                                    backgroundColor: 'background.paper',
+                                    '&:hover img': {
+                                        transform: 'scale(1.03)'
+                                    }
+                                }}>
+                                    <img
+                                        src={Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : product.image}
+                                        alt={product.name}
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
+                                        }}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                            transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            backfaceVisibility: 'hidden',
+                                            WebkitBackfaceVisibility: 'hidden',
+                                            willChange: 'transform',
+                                            transform: 'translateZ(0)',
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0
+                                        }}
+                                        loading="eager"
+                                        decoding="async"
+                                    />
+                                </Box>
                                 <CardContent sx={{ flexGrow: 1, p: 3, position: 'relative', zIndex: 1 }}>
                                     <Typography
                                         variant="overline"
@@ -393,8 +462,10 @@ const ProductsPage = () => {
                                         {product.category}
                                     </Typography>
                                     <Typography
+                                        gutterBottom
                                         variant="h5"
                                         component="h3"
+                                        itemProp="name"
                                         sx={{
                                             fontWeight: 700,
                                             mb: 1,
@@ -421,17 +492,21 @@ const ProductsPage = () => {
                                     </Typography>
 
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <Typography variant="body1" color="primary" sx={{ fontWeight: 700 }}>
-                                            Rs.{product.price}
+                                        <Typography
+                                            variant="h6" color="primary" sx={{ fontWeight: 700 }}
+                                            itemProp="offers"
+                                            itemScope
+                                            itemType="https://schema.org/Offer"
+                                        >
+                                            <meta itemProp="price" content={product.price.toString()} />
+                                            <meta itemProp="priceCurrency" content="PKR" />
+                                            <meta itemProp="availability" content={'InStock'} />
+                                            PKR {product.price}
                                         </Typography>
                                         <Button
                                             variant="contained"
                                             color="primary"
-                                            startIcon={<CartIcon />}
-                                            onClick={(e) => {
-                                                e.stopPropagation(); // Prevent event from bubbling up to the card
-                                                handleAddToCart(product);
-                                            }}
+                                            onClick={() => handleAddToCart(product)}
                                             sx={{
                                                 borderRadius: 6,
                                                 px: 3,
@@ -444,6 +519,7 @@ const ProductsPage = () => {
                                                     boxShadow: '0 8px 20px rgba(0,0,0,0.2)'
                                                 }
                                             }}
+                                            aria-label={`Add ${product.name} to cart`}
                                         >
                                             Add to Cart
                                         </Button>

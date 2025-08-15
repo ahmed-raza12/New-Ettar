@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import {
   Box,
   Typography,
@@ -13,7 +14,9 @@ import {
   CircularProgress,
   AppBar,
   Toolbar,
-  Badge
+  Badge,
+  Breadcrumbs,
+  Link as MuiLink
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -99,6 +102,60 @@ const Dot = styled(DotIcon)(({ active, theme }) => ({
   },
 }));
 
+// Generate product schema for structured data
+const generateProductSchema = (product, images, currentImageIndex) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: product.name,
+  image: images.map(img => new URL(img, 'https://almalafragrance.com').toString()),
+  description: product.description || 'Premium fragrance from AlMala Fragrance',
+  brand: {
+    '@type': 'Brand',
+    name: product.brand || 'AlMala Fragrance'
+  },
+  offers: {
+    '@type': 'Offer',
+    price: product.price?.toString() || '0.00',
+    priceCurrency: 'PKR',
+    availability: true ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+    itemCondition: 'https://schema.org/NewCondition',
+    url: `https://almalafragrance.com/products/${product.id}`
+  },
+  aggregateRating: product.rating ? {
+    '@type': 'AggregateRating',
+    ratingValue: product.rating.toString(),
+    reviewCount: product.reviewCount?.toString() || '0',
+    bestRating: '5',
+    worstRating: '1'
+  } : undefined
+});
+
+// Generate breadcrumb schema for structured data
+const generateBreadcrumbSchema = (product) => ({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: 'https://almalafragrance.com/'
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Collections',
+      item: 'https://almalafragrance.com/collections'
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: product.name,
+      item: `https://almalafragrance.com/products/${product.id}`
+    }
+  ]
+});
+
 const ProductDetailsPage = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
@@ -110,6 +167,52 @@ const ProductDetailsPage = () => {
   const [showAddedToCart, setShowAddedToCart] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  // Generate canonical URL
+  const canonicalUrl = `https://almalafragrance.com/products/${productId}`;
+  
+  // Get images from product or use default images
+  const images = useMemo(() => 
+    product?.images?.length > 0
+      ? product.images
+      : product?.image
+        ? [product.image]
+        : ['/placeholder-product.jpg'],
+    [product?.images, product?.image]
+  );
+  
+  // Get current image URL
+  const mainImage = useMemo(() => 
+    product ? (images[currentImageIndex] || '') : '',
+    [product, images, currentImageIndex]
+  );
+  
+  const imageUrl = useMemo(() => 
+    mainImage.startsWith('http') ? mainImage : mainImage ? `https://almalafragrance.com${mainImage}` : '',
+    [mainImage]
+  );
+  
+  // Page metadata
+  const pageTitle = useMemo(
+    () => product ? `${product.name} | ${product.brand || 'AlMala Fragrance'}` : 'Loading...',
+    [product?.name, product?.brand]
+  );
+  
+  const pageDescription = useMemo(
+    () => product?.description || (product?.name ? `Discover ${product.name}, a premium fragrance by ${product.brand || 'AlMala Fragrance'}.` : 'Premium fragrances by AlMala'),
+    [product?.description, product?.name, product?.brand]
+  );
+  
+  // Generate structured data using useMemo
+  const productSchema = useMemo(() => 
+    product ? generateProductSchema(product, images, currentImageIndex) : null,
+    [product, images, currentImageIndex]
+  );
+
+  const breadcrumbSchema = useMemo(() => 
+    product ? generateBreadcrumbSchema(product) : null,
+    [product]
+  );
 
   useEffect(() => {
     const handleCartUpdate = () => {
@@ -156,13 +259,6 @@ const ProductDetailsPage = () => {
     }
   }, [productId]);
 
-  // Get images from product or use default images
-  const images = product?.images?.length > 0
-    ? product.images
-    : product?.image
-      ? [product.image]
-      : ['/placeholder-product.jpg'];
-
   const handleNextImage = () => {
     setCurrentImageIndex((prevIndex) =>
       prevIndex === images.length - 1 ? 0 : prevIndex + 1
@@ -205,8 +301,45 @@ const ProductDetailsPage = () => {
     );
   }
 
+  if (!product) {
+    return null;
+  }
+
   return (
-    <Box sx={{ flexGrow: 1, pb: 4 }}>
+    <Box component="main" sx={{ flexGrow: 1, pb: 4 }} itemScope itemType="https://schema.org/Product">
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={canonicalUrl} />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="product" />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:image" content={imageUrl} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:site_name" content="AlMala Fragrance" />
+        <meta property="product:price:amount" content={product.price?.toString() || '0'} />
+        <meta property="product:price:currency" content="PKR" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:image" content={imageUrl} />
+        
+        {/* Structured Data */}
+        {productSchema && (
+          <script type="application/ld+json">
+            {JSON.stringify(productSchema)}
+          </script>
+        )}
+        {breadcrumbSchema && (
+          <script type="application/ld+json">
+            {JSON.stringify(breadcrumbSchema)}
+          </script>
+        )}
+      </Helmet>
       <AppBar position="static" color="default" elevation={0} sx={{ backgroundColor: 'white', mb: 4, borderBottom: '1px solid rgba(0, 0, 0, 0.12)' }}>
         <Container maxWidth="lg">
           <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
@@ -223,23 +356,28 @@ const ProductDetailsPage = () => {
                 <LogoText>Al Mala</LogoText>
               </Link>
             </Box>
-
-            {/* <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <IconButton color="inherit" onClick={() => navigate('/cart')}>
-                <CartBadge badgeContent={cartItems.length} color="primary">
-                  <CartIcon />
-                </CartBadge>
-              </IconButton>
-            </Box> */}
           </Toolbar>
         </Container>
       </AppBar>
 
       <Container maxWidth="lg">
+        {/* Breadcrumb Navigation */}
+        <Box sx={{ mt: 2, mb: 3 }}>
+          <Breadcrumbs aria-label="breadcrumb">
+            <MuiLink component={Link} to="/" color="inherit">
+              Home
+            </MuiLink>
+            <MuiLink component={Link} to="/collections" color="inherit">
+              Collections
+            </MuiLink>
+            <Typography color="text.primary">{product.name}</Typography>
+          </Breadcrumbs>
+        </Box>
+        
         <Box sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-          gap: 3,
+          gap: 4,
           mt: 0
         }}>
           {/* Image Slider */}
@@ -277,11 +415,17 @@ const ProductDetailsPage = () => {
 
               <ProductImage
                 src={images[currentImageIndex]}
-                alt={product.name}
+                alt={`${product.name} - ${product.brand || 'AlMala Fragrance'}`}
+                title={`${product.name} - ${product.brand || 'AlMala Fragrance'}`}
+                itemProp="image"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = '/placeholder-product.jpg';
+                  e.target.src = 'https://via.placeholder.com/500x500?text=No+Image+Available';
                 }}
+                loading="eager"
+                decoding="async"
+                width="500"
+                height="500"
               />
             </ImageSlider>
 
@@ -330,7 +474,7 @@ const ProductDetailsPage = () => {
 
           {/* Product Info */}
           <Box>
-            <Typography variant="h4" component="h1" gutterBottom>
+            <Typography variant="h4" component="h1" gutterBottom itemProp="name">
               {product.name}
             </Typography>
 
@@ -340,23 +484,36 @@ const ProductDetailsPage = () => {
               </Typography>
             )}
 
-            <Box sx={{ my: 3, display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ my: 3, display: 'flex', alignItems: 'center' }} itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
               <Rating
                 value={product.rating || 0}
                 precision={0.5}
                 readOnly
                 sx={{ mr: 1 }}
+                aria-label={`Rating: ${product.rating || 0} out of 5`}
               />
               <Typography variant="body1" color="text.secondary">
-                ({product.reviewCount || 0} reviews)
+                <span itemProp="ratingValue">{product.rating || 0}</span> out of <span itemProp="bestRating">5</span> 
+                (<span itemProp="reviewCount">{product.reviewCount || 0}</span> reviews)
               </Typography>
+              <meta itemProp="worstRating" content="1" />
             </Box>
 
-            <Typography variant="h5" sx={{ my: 3, color: 'primary.main' }}>
-              ${product.price?.toFixed(2) || '0.00'}
+            <Typography 
+              variant="h5" 
+              sx={{ my: 3, color: 'primary.main' }}
+              itemProp="offers"
+              itemScope
+              itemType="https://schema.org/Offer"
+            >
+              <span itemProp="price" content={product.price?.toString() || '0.00'}>PKR {product.price?.toFixed(2) || '0.00'}</span>
+              <meta itemProp="priceCurrency" content="PKR" />
+              <link itemProp="availability" href="https://schema.org/InStock" />
+              <meta itemProp="itemCondition" content="https://schema.org/NewCondition" />
+              <meta itemProp="url" content={canonicalUrl} />
             </Typography>
 
-            <Typography variant="body1" paragraph>
+            <Typography variant="body1" paragraph itemProp="description">
               {product.description || 'No description available.'}
             </Typography>
 
@@ -378,9 +535,11 @@ const ProductDetailsPage = () => {
                   <Typography variant="body2" color="text.secondary">Availability</Typography>
                   <Typography
                     variant="body1"
-                    color={true ? 'success.main' : 'error.main'}
+                    color="success.main"
+                    itemProp="availability"
+                    content="https://schema.org/InStock"
                   >
-                    {true ? 'In Stock' : 'Out of Stock'}
+                    In Stock
                   </Typography>
                 </div>
               </Box>

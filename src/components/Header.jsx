@@ -141,7 +141,7 @@ const Header = () => {
     return (
         <>
             <AnnouncementBar sx={{ backgroundColor: '#C8A04D', color: '#1C1C1C', fontSize: '0.70rem' }}>
-                Free countrywide shipping on orders | 30-day returns
+            Al-Mala Fragrance is your destination for luxury perfumes at budget-friendly prices.
             </AnnouncementBar>
 
             <AppBar

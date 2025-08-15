@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import App from './App';
@@ -14,21 +15,23 @@ import ProductDetailsPage from './components/ProductDetailsPage';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Routes>
-          {/* Main app routes */}
-          <Route path="/" element={<App />} />
-          <Route path="/check-out" element={<CheckoutForm />} />
-          <Route path="/collections" element={<ProductsPage />} />
-          <Route path="/products/:productId" element={<ProductDetailsPage />} />
-          <Route path="/order-confirmation" element={<OrderConfirmation />} />
-          
-          {/* Admin routes - prefixed with /admin */}
-          <Route path="/admin/*" element={<AdminApp />} />
-          {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
-        </Routes>
-      </ThemeProvider>
+      <HelmetProvider>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <Routes>
+            {/* Main app routes */}
+            <Route path="/" element={<App />} />
+            <Route path="/check-out" element={<CheckoutForm />} />
+            <Route path="/collections" element={<ProductsPage />} />
+            <Route path="/products/:productId" element={<ProductDetailsPage />} />
+            <Route path="/order-confirmation" element={<OrderConfirmation />} />
+            
+            {/* Admin routes - prefixed with /admin */}
+            <Route path="/admin/*" element={<AdminApp />} />
+            {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
+          </Routes>
+        </ThemeProvider>
+      </HelmetProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

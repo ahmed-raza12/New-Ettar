@@ -1,0 +1,24 @@
+# Allow all web crawlers to index the site
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://almalafragrance.com/sitemap.xml
+
+# Disallow admin and API routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /check-out
+Disallow: /order-confirmation
+
+# Allow all other pages
+Allow: /*.html
+Allow: /*.css
+Allow: /*.js
+
+# Crawl-delay: 10  # Uncomment and adjust if needed to prevent server overload
+
+# Development and staging environments (if applicable)
+# User-agent: *
+# Disallow: /staging/
+# Disallow: /development/
