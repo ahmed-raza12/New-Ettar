@@ -53,7 +53,7 @@ const CheckoutForm = () => {
     }, []);
 
 
-    const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = cartItems.reduce((sum, item) => sum + (item.discountedPrice * item.quantity), 0);
     const total = subtotal;
 
     const handleInputChange = (e) => {
@@ -106,6 +106,7 @@ const CheckoutForm = () => {
                     name: item.name,
                     price: item.price,
                     quantity: item.quantity,
+                    discountedPrice: item.discountedPrice,
                     image: item.images[0]
                 })),
                 subtotal,
@@ -290,7 +291,7 @@ const CheckoutForm = () => {
                                         </Box>
                                         <Box>
                                             <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
-                                                Rs.{item.price.toFixed(2)}
+                                                Rs.{item.discountedPrice.toFixed(2)}
                                             </Typography>
                                             <Typography variant="caption" color="text.secondary">
                                                 Qty: {item.quantity}

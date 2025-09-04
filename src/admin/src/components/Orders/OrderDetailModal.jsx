@@ -369,10 +369,10 @@ const OrderDetailModal = ({ order, onClose }) => {
                             mt: { xs: 2, sm: 0 }
                           }}>
                             <Typography variant="body2" color="text.secondary">
-                              Qty: {item.quantity} × Rs.{item.price.toFixed(2)}
+                              Qty: {item.quantity} × Rs.{item.discountedPrice || item.price.toFixed(2)}
                             </Typography>
                             <Typography variant="subtitle1" fontWeight="600">
-                              Rs.{(item.price * item.quantity).toFixed(2)}
+                              Rs.{((item.discountedPrice || item.price) * item.quantity).toFixed(2)}
                             </Typography>
                           </Box>
                         </Box>

@@ -18,7 +18,7 @@ const TopProducts = ({ orders, products }) => {
         };
       }
       productSales[item.id].quantity += item.quantity;
-      productSales[item.id].revenue += item.price * item.quantity;
+      productSales[item.id].revenue += (item.discountedPrice || item.price) * item.quantity;
     });
   });
 

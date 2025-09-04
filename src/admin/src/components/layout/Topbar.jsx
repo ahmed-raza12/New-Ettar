@@ -167,20 +167,22 @@ const Topbar = ({ handleDrawerToggle, isCollapsed, toggleCollapse }) => {
             </ToggleButton>
           )}
 
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{
-              fontWeight: 600,
-              background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              letterSpacing: '0.5px'
-            }}
-          >
-            Admin
-          </Typography>
+          {!isMobile && (
+            <Typography
+              variant="h6"
+              noWrap
+              component="div"
+              sx={{
+                fontWeight: 600,
+                background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: '0.5px'
+              }}
+            >
+              Admin
+            </Typography>
+          )}
         </Box>
 
         {!isMedium && (

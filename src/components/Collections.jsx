@@ -180,7 +180,7 @@ const ProductsPage = () => {
         setCartItems(updatedCart);
     };
 
-    const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = cartItems.reduce((sum, item) => sum + (item.discountedPrice * item.quantity), 0);
     const toggleMobileMenu = () => {
         setMobileMenuOpen(!mobileMenuOpen);
     };
@@ -396,14 +396,13 @@ const ProductsPage = () => {
                 {/* Product Grid */}
                 <Grid container spacing={3} sx={{ mb: 4 }}>
                     {paginatedProducts.map((product) => (
-                        <Grid sx={{
+                        <Grid onClick={() => navigate(`/products/${product.id}`)} sx={{
                             height: '100%',
                         }} item xs={12} sm={6} md={3} lg={3} key={product.id}>
                             <Card
                                 component="article"
                                 itemScope
                                 itemType="https://schema.org/Product"
-                                onClick={() => navigate(`/products/${product.id}`)}
                                 sx={{
                                     width: '100%',
                                     height: '90%',
@@ -579,8 +578,10 @@ const ProductsPage = () => {
                                         <Button
                                             variant="contained"
                                             color="primary"
-                                            onClick={() => handleAddToCart(product)}
-                                            sx={{
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // ✅ Stops the click from bubbling up to parent
+                                                handleAddToCart(product);
+                                            }} sx={{
                                                 borderRadius: 6,
                                                 px: 3,
                                                 py: 1,
@@ -787,7 +788,7 @@ const ProductsPage = () => {
                                                         </IconButton>
                                                     </Box>
                                                     <Typography variant="body1" fontWeight="medium">
-                                                        ${(item.price * item.quantity).toFixed(2)}
+                                                        Rs.{(item.discountedPrice * item.quantity).toFixed(2)}
                                                     </Typography>
                                                 </Box>
                                             </Box>
@@ -816,7 +817,7 @@ const ProductsPage = () => {
                             }}>
                                 <Typography variant="subtitle1">Subtotal</Typography>
                                 <Typography variant="subtitle1" fontWeight="medium">
-                                    ${subtotal.toFixed(2)}
+                                    Rs.{subtotal.toFixed(2)}
                                 </Typography>
                             </Box>
                             <Typography variant="body2" color="text.secondary" sx={{

@@ -121,6 +121,14 @@ const Sidebar = ({
     }
   };
 
+  const handleMenuClick = (path) => {
+    navigate(path);
+    handleDrawerToggle();
+    if (!isCollapsed) {
+      setProductsOpen(false);
+    }
+  };
+
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
     { text: 'Products', icon: <ProductsIcon />, path: '/admin/products' },
@@ -258,7 +266,7 @@ const Sidebar = ({
               >
                 <ListItem disablePadding>
                   <StyledListItemButton
-                    onClick={() => navigate(item.path)}
+                    onClick={() => handleMenuClick(item.path)}
                     selected={isActive(item.path)}
                     sx={{
                       justifyContent: isCollapsed && !isMobile ? 'center' : 'flex-start',

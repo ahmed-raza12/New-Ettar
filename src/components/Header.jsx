@@ -122,7 +122,7 @@ const Header = () => {
         setCartItems(updatedCart);
     };
 
-    const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = cartItems.reduce((sum, item) => sum + (item.discountedPrice * item.quantity), 0);
     const toggleMobileMenu = () => {
         setMobileMenuOpen(!mobileMenuOpen);
     };
@@ -461,7 +461,7 @@ const Header = () => {
                                                         </IconButton>
                                                     </Box>
                                                     <Typography variant="body1" fontWeight="medium">
-                                                        Rs.{(item.price * item.quantity).toFixed(2)}
+                                                        Rs.{(item.discountedPrice * item.quantity).toFixed(2)}
                                                     </Typography>
                                                 </Box>
                                             </Box>
