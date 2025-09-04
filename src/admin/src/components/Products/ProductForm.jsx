@@ -23,6 +23,7 @@ const ProductForm = ({ open, onClose, productToEdit }) => {
     category: '',
     price: '',
     size: '100ml',
+    badgeText: '',
     images: ['', '', ''],
     description: ''
   });
@@ -35,7 +36,9 @@ const ProductForm = ({ open, onClose, productToEdit }) => {
         name: productToEdit.name || '',
         category: productToEdit.category || '',
         price: productToEdit.price?.toString() || '',
+        discountedPrice: productToEdit.discountedPrice?.toString() || '',
         size: productToEdit.size || '100ml',
+        badgeText: productToEdit.badgeText || '',
         images: Array.isArray(productToEdit.images) 
           ? [...productToEdit.images, '', ''].slice(0, 3) // Ensure we have exactly 3 images
           : ['', '', ''],
@@ -47,18 +50,19 @@ const ProductForm = ({ open, onClose, productToEdit }) => {
         name: '',
         category: '',
         price: '',
+        discountedPrice: '',
         size: '100ml',
         images: ['', '', ''],
+        badgeText: '',
         description: ''
       });
     }
   }, [productToEdit, open]); // Also trigger on open change
 
   const categories = [
-    'Eau de Parfum',
-    'Eau de Toilette',
-    'Eau de Cologne',
-    'Perfume Oil'
+    'male',
+    'female',
+    'unisex'
   ];
 
   const sizes = ['30ml', '50ml', '100ml', '200ml'];
@@ -87,7 +91,9 @@ const ProductForm = ({ open, onClose, productToEdit }) => {
         name: product.name,
         category: product.category,
         price: Number(product.price),
+        discountedPrice: Number(product.discountedPrice),
         size: product.size,
+        badgeText: product.badgeText,
         images: product.images,
         description: product.description
       };
@@ -144,7 +150,7 @@ const ProductForm = ({ open, onClose, productToEdit }) => {
                 ))}
               </TextField>
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Price (Rs.)"
@@ -157,7 +163,20 @@ const ProductForm = ({ open, onClose, productToEdit }) => {
                 inputProps={{ min: 0, step: 0.01 }}
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Discounted Price (Rs.)"
+                name="discountedPrice"
+                type="number"
+                value={product.discountedPrice}
+                onChange={handleChange}
+                margin="normal"
+                required
+                inputProps={{ min: 0, step: 0.01 }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 select
@@ -174,6 +193,17 @@ const ProductForm = ({ open, onClose, productToEdit }) => {
                   </MenuItem>
                 ))}
               </TextField>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Badge Text"
+                name="badgeText"
+                value={product.badgeText}
+                onChange={handleChange}
+                margin="normal"
+                required
+              />
             </Grid>
             {[0, 1, 2].map((index) => (
               <Grid item xs={12} key={index}>

@@ -343,16 +343,8 @@ const ProductDetailsPage = () => {
       <AppBar position="static" color="default" elevation={0} sx={{ backgroundColor: 'white', mb: 4, borderBottom: '1px solid rgba(0, 0, 0, 0.12)' }}>
         <Container maxWidth="lg">
           <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <IconButton
-                edge="start"
-                color="inherit"
-                aria-label="menu"
-                sx={{ mr: 2, display: { xs: 'flex', md: 'none' } }}
-              >
-                <MenuIcon />
-              </IconButton>
-              <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Link to="/" style={{ textDecoration: 'none', color: 'inherit',  textAlign: 'center' }}>
                 <LogoText>Al Mala</LogoText>
               </Link>
             </Box>

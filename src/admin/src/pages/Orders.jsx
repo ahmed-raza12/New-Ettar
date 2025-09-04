@@ -30,7 +30,7 @@ import {
   alpha,
   styled
 } from '@mui/material';
-import { 
+import {
   Visibility as VisibilityIcon,
   Edit as EditIcon,
   Search as SearchIcon,
@@ -41,9 +41,10 @@ import {
   CheckCircle as DeliveredIcon,
   Pending as PendingIcon,
   Error as CancelledIcon,
-  Inventory as ProcessingIcon
+  Inventory as ProcessingIcon,
+  Delete
 } from '@mui/icons-material';
-import { getOrders, updateOrderStatus } from '../services/orderService';
+import { getOrders, updateOrderStatus, deleteOrder } from '../services/orderService';
 import OrderDetailModal from '../components/Orders/OrderDetailModal';
 
 // Styled components for premium look
@@ -137,7 +138,7 @@ const Orders = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [refreshing, setRefreshing] = useState(false);
-  
+
   const theme = useTheme();
 
   // Stats calculation
@@ -145,11 +146,11 @@ const Orders = () => {
   const pendingOrders = orders.filter(order => order.status === 'pending').length;
   const deliveredOrders = orders.filter(order => order.status === 'delivered').length;
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-  
+
   useEffect(() => {
     fetchOrders();
   }, []);
-  
+
   const fetchOrders = () => {
     setLoading(true);
     const unsubscribe = getOrders(
@@ -165,10 +166,10 @@ const Orders = () => {
         console.error(err);
       }
     );
-    
+
     return unsubscribe;
   };
-  
+
   const handleRefresh = () => {
     setRefreshing(true);
     fetchOrders();
@@ -195,24 +196,24 @@ const Orders = () => {
   };
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = 
+    const matchesSearch =
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (order.customer.firstName + ' ' + order.customer.lastName)
         .toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = 
+
+    const matchesStatus =
       statusFilter === 'all' || order.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
-  
+
   const paginatedOrders = filteredOrders.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
-  
+
   const getStatusIcon = (status) => {
-    switch(status) {
+    switch (status) {
       case 'pending':
         return <PendingIcon fontSize="small" />;
       case 'processing':
@@ -253,9 +254,9 @@ const Orders = () => {
           gap: 2
         }}
       >
-        <Typography 
-          variant="h4" 
-          sx={{ 
+        <Typography
+          variant="h4"
+          sx={{
             fontWeight: 600,
             backgroundImage: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
             WebkitBackgroundClip: 'text',
@@ -264,12 +265,12 @@ const Orders = () => {
         >
           Order Management
         </Typography>
-        
+
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             startIcon={<ExportIcon />}
-            sx={{ 
+            sx={{
               borderRadius: theme.shape.borderRadius * 3,
               textTransform: 'none',
               fontWeight: 600
@@ -277,12 +278,12 @@ const Orders = () => {
           >
             Export
           </Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             startIcon={<RefreshIcon />}
             onClick={handleRefresh}
             disabled={refreshing}
-            sx={{ 
+            sx={{
               borderRadius: theme.shape.borderRadius * 3,
               textTransform: 'none',
               fontWeight: 600,
@@ -390,7 +391,7 @@ const Orders = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
           sx={{ width: { xs: '100%', sm: 300 } }}
         />
-        
+
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', width: { xs: '100%', sm: 'auto' } }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <FilterIcon sx={{ mr: 1, color: 'text.secondary' }} />
@@ -402,7 +403,7 @@ const Orders = () => {
             size="small"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            sx={{ 
+            sx={{
               minWidth: 160,
               height: 40,
               borderRadius: theme.shape.borderRadius * 3,
@@ -429,10 +430,10 @@ const Orders = () => {
 
       {/* Main Table */}
       {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-      
-      <Paper 
-        elevation={0} 
-        sx={{ 
+
+      <Paper
+        elevation={0}
+        sx={{
           overflow: 'hidden',
           border: `1px solid ${alpha(theme.palette.divider, 0.6)}`,
           borderRadius: theme.shape.borderRadius * 2,
@@ -491,13 +492,25 @@ const Orders = () => {
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                         <Tooltip title="View Details">
-                          <StyledActionButton 
+                          <StyledActionButton
                             size="small"
                             onClick={() => setSelectedOrder(order)}
                           >
                             <VisibilityIcon fontSize="small" />
                           </StyledActionButton>
                         </Tooltip>
+                        {
+                          order.status === 'cancelled' &&
+                          <Tooltip title="Delete">
+                            <StyledActionButton
+                              size="small"
+                              onClick={() => deleteOrder(order.id)}
+                            >
+                              <Delete fontSize="small" />
+                            </StyledActionButton>
+                          </Tooltip>
+
+                        }
                         <Select
                           value={order.status}
                           onChange={(e) => handleStatusChange(order.id, e.target.value)}
@@ -516,10 +529,10 @@ const Orders = () => {
                             '& .MuiOutlinedInput-notchedOutline': {
                               borderColor: alpha(
                                 order.status === 'pending' ? theme.palette.warning.main :
-                                order.status === 'processing' ? theme.palette.info.main :
-                                order.status === 'shipped' ? theme.palette.primary.main :
-                                order.status === 'delivered' ? theme.palette.success.main :
-                                theme.palette.error.main,
+                                  order.status === 'processing' ? theme.palette.info.main :
+                                    order.status === 'shipped' ? theme.palette.primary.main :
+                                      order.status === 'delivered' ? theme.palette.success.main :
+                                        theme.palette.error.main,
                                 0.3
                               ),
                             },
@@ -549,7 +562,7 @@ const Orders = () => {
             </TableBody>
           </Table>
         </StyledTableContainer>
-        
+
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"

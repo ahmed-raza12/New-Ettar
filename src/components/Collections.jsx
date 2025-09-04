@@ -398,24 +398,77 @@ const ProductsPage = () => {
                     {paginatedProducts.map((product) => (
                         <Grid sx={{
                             height: '100%',
-                        }} item xs={12} sm={6} md={4} lg={3} key={product.id}>
+                        }} item xs={12} sm={6} md={3} lg={3} key={product.id}>
                             <Card
                                 component="article"
                                 itemScope
                                 itemType="https://schema.org/Product"
                                 onClick={() => navigate(`/products/${product.id}`)}
                                 sx={{
-                                    height: '100%',
+                                    width: '100%',
+                                    height: '90%',
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                                    boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
+                                    borderRadius: 3,
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    transition: 'all 0.3s',
+                                    '&::before': {
+                                        content: '""',
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: '100%',
+                                        background: 'linear-gradient(to bottom, rgba(0,0,0,0) 70%, rgba(0,0,0,0.02) 100%)',
+                                        zIndex: 0
+                                    },
                                     '&:hover': {
-                                        transform: 'translateY(-5px)',
+                                        transform: product.position === 'center' ? 'translateY(-10px)' : 'translateY(-5px)',
+                                        boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
                                         cursor: 'pointer',
-                                        boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
                                     }
                                 }}
                             >
+                                <Box
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 12,
+                                        left: 12,
+                                        zIndex: 2,
+                                        bgcolor: 'error.main',
+                                        color: 'common.white',
+                                        px: 1.5,
+                                        py: 0.7,
+                                        borderRadius: 5,
+                                        boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        minWidth: 'auto',
+                                        height: 28,
+                                        '& span': {
+                                            fontSize: '0.7rem !important',
+                                            whiteSpace: 'nowrap'
+                                        }
+                                    }}
+                                >
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            textTransform: 'uppercase',
+                                            fontSize: '0.7rem',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {product.badgeText || 'New'}
+                                        {product.badgeText === 'sale' && (
+                                            <> &nbsp;{Math.round(100 - (product.discountedPrice / product.price) * 100)}% Off</>
+                                        )}
+                                    </Typography>
+                                </Box>
                                 <meta itemProp="brand" content="AlMala Fragrance" />
                                 <meta itemProp="category" content={product.category || 'Perfume'} />
                                 <Box sx={{
@@ -492,17 +545,37 @@ const ProductsPage = () => {
                                     </Typography>
 
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <Typography
-                                            variant="h6" color="primary" sx={{ fontWeight: 700 }}
-                                            itemProp="offers"
-                                            itemScope
-                                            itemType="https://schema.org/Offer"
-                                        >
-                                            <meta itemProp="price" content={product.price.toString()} />
-                                            <meta itemProp="priceCurrency" content="PKR" />
-                                            <meta itemProp="availability" content={'InStock'} />
-                                            PKR {product.price}
-                                        </Typography>
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 3 }}>
+                                            {product.badgeText === 'sale' && product.discountedPrice ? (
+                                                <>
+                                                    {/* Discounted Price (top) */}
+                                                    <Typography
+                                                        variant="h6"
+                                                        color="error.main"
+                                                        sx={{ fontWeight: 700, lineHeight: 1 }}
+                                                    >
+                                                        Rs.{product.discountedPrice}
+                                                    </Typography>
+                                                    {/* Original Price (bottom, struck through) */}
+                                                    <Typography
+                                                        variant="body2"
+                                                        color="text.secondary"
+                                                        sx={{ textDecoration: 'line-through', fontSize: '0.9rem' }}
+                                                    >
+                                                        Rs.{product.price}
+                                                    </Typography>
+                                                </>
+                                            ) : (
+                                                /* Regular Price (not on sale) */
+                                                <Typography
+                                                    variant="h6"
+                                                    color="primary"
+                                                    sx={{ fontWeight: 700 }}
+                                                >
+                                                    Rs.{product.price}
+                                                </Typography>
+                                            )}
+                                        </Box>
                                         <Button
                                             variant="contained"
                                             color="primary"

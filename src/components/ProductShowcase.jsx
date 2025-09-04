@@ -112,19 +112,19 @@ const ProductShowcase = () => {
   // Preload images for smoother transitions
   const preloadImages = () => {
     if (!products || products.length === 0) return;
-    
+
     // Preload next and previous images
     const nextIndex = (currentIndex + 1) % products.length;
     const prevIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
-    
+
     [nextIndex, prevIndex].forEach(index => {
       const product = products[index];
       if (!product) return;
-      
-      const imageUrl = Array.isArray(product.images) && product.images.length > 0 
-        ? product.images[0] 
+
+      const imageUrl = Array.isArray(product.images) && product.images.length > 0
+        ? product.images[0]
         : product.image;
-      
+
       if (imageUrl) {
         const img = new Image();
         img.src = imageUrl;
@@ -139,7 +139,7 @@ const ProductShowcase = () => {
 
   const handleNext = () => {
     if (sliding || !products || products.length === 0) return;
-    
+
     const nextIndex = (currentIndex + 1) % products.length;
     setDirection('next');
     setSliding(true);
@@ -156,7 +156,7 @@ const ProductShowcase = () => {
   // Apply similar safety checks to handlePrev and goToSlide
   const handlePrev = () => {
     if (sliding || !products || products.length === 0) return;
-    
+
     const prevIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
     setDirection('prev');
     setSliding(true);
@@ -172,7 +172,7 @@ const ProductShowcase = () => {
 
   const goToSlide = (index) => {
     if (sliding || index === currentIndex || !products || products.length === 0) return;
-    
+
     setDirection(index > currentIndex ? 'next' : 'prev');
     setSliding(true);
 
@@ -271,7 +271,7 @@ const ProductShowcase = () => {
   // Enhanced slide animation styles with optimized transitions
   const getSlideStyle = (position) => {
     const transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
-    
+
     if (isMobile) {
       if (sliding) {
         return {
@@ -643,6 +643,44 @@ const ProductShowcase = () => {
                       }
                     }}
                   >
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 12,
+                        left: 12,
+                        zIndex: 2,
+                        bgcolor: 'error.main',
+                        color: 'common.white',
+                        px: 1.5,
+                        py: 0.7,
+                        borderRadius: 5,
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minWidth: 'auto',
+                        height: 28,
+                        '& span': {
+                          fontSize: '0.7rem !important',
+                          whiteSpace: 'nowrap'
+                        }
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontWeight: 'bold',
+                          textTransform: 'uppercase',
+                          fontSize: '0.7rem',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {product.badgeText || 'New'}
+                        {product.badgeText === 'sale' && (
+                          <> &nbsp;{Math.round(100 - (product.discountedPrice / product.price) * 100)}% Off</>
+                        )}
+                      </Typography>
+                    </Box>
                     {/* Favorite button */}
                     <IconButton
                       size="small"
@@ -740,9 +778,37 @@ const ProductShowcase = () => {
                       </Typography>
 
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="h6" color="primary" sx={{ fontWeight: 700 }}>
-                          Rs.{product.price}
-                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 3 }}>
+                          {product.badgeText === 'sale' && product.discountedPrice ? (
+                            <>
+                              {/* Discounted Price (top) */}
+                              <Typography
+                                variant="h6"
+                                color="error.main"
+                                sx={{ fontWeight: 700, lineHeight: 1 }}
+                              >
+                                Rs.{product.discountedPrice}
+                              </Typography>
+                              {/* Original Price (bottom, struck through) */}
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{ textDecoration: 'line-through', fontSize: '0.9rem' }}
+                              >
+                                Rs.{product.price}
+                              </Typography>
+                            </>
+                          ) : (
+                            /* Regular Price (not on sale) */
+                            <Typography
+                              variant="h6"
+                              color="primary"
+                              sx={{ fontWeight: 700 }}
+                            >
+                              Rs.{product.price}
+                            </Typography>
+                          )}
+                        </Box>
                         <Button
                           variant="contained"
                           color="primary"

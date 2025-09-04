@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Orders from './pages/Orders';
 import Login from './pages/Login';
+import HeroAdmin from './pages/HeroAdmin';
 
 function AppRouter() {
   const { currentUser } = useAuth();
@@ -21,6 +22,7 @@ function AppRouter() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="products" element={<Products />} />
         <Route path="orders" element={<Orders />} />
+        <Route path="hero" element={<HeroAdmin />} />
         <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
       </Route>
     </Routes>

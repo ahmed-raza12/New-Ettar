@@ -1,6 +1,6 @@
 // admin/src/services/orderService.js
 import { db } from '../firebase/config';
-import { ref, push, set, onValue, update } from 'firebase/database';
+import { ref, push, set, onValue, update, remove } from 'firebase/database';
 
 export const createOrder = (orderData) => {
   const ordersRef = ref(db, 'orders');
@@ -20,8 +20,10 @@ export const updateOrderStatus = (orderId, newStatus) => {
 
 export const getOrders = (callback) => {
   const ordersRef = ref(db, 'orders');
+
   return onValue(ordersRef, (snapshot) => {
     const orders = [];
+    console.log(snapshot.val())
     snapshot.forEach((childSnapshot) => {
       orders.push({
         id: childSnapshot.key,
@@ -32,4 +34,10 @@ export const getOrders = (callback) => {
     orders.sort((a, b) => b.createdAt - a.createdAt);
     callback(orders);
   });
+};
+
+
+export const deleteOrder = (orderId) => {
+  const orderRef = ref(db, `orders/${orderId}`);
+  return remove(orderRef);
 };

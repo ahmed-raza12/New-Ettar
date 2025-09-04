@@ -21,6 +21,7 @@ import {
   LocalBar as ProductsIcon,
   Logout as LogoutIcon,
   ExpandLess,
+  AddPhotoAlternate as HeroIcon,
   ExpandMore,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -124,6 +125,7 @@ const Sidebar = ({
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
     { text: 'Products', icon: <ProductsIcon />, path: '/admin/products' },
     { text: 'Orders', icon: <OrdersIcon />, path: '/admin/orders' },
+    { text: 'Hero', icon: <HeroIcon />, path: '/admin/hero' },
   ];
 
   const bottomMenuItems = [
