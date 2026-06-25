@@ -26,6 +26,18 @@ import { styled } from '@mui/system';
 import { getCart, removeFromCart, updateCartItem } from '../utils/cart';
 import { useNavigate } from 'react-router-dom';
 
+// ---------------------------------------------------------------------------
+// AL-MALA — "Kraft & Ink" theme tokens (matches the packaging box exactly)
+// ---------------------------------------------------------------------------
+const KRAFT = {
+    paper: '#D9BD93',
+    paperLight: '#E7D3AE',
+    paperDark: '#B99564',
+    ink: '#211A12',
+    cream: '#F4ECDC',
+    bronze: '#8C5A2B',
+};
+
 const AnnouncementBar = styled('div')({
     backgroundColor: 'black',
     color: 'white',
@@ -38,7 +50,7 @@ const AnnouncementBar = styled('div')({
 });
 
 const LogoText = styled(Typography)(({ theme }) => ({
-    fontFamily: 'Playfair Display',
+    fontFamily: '"Playfair Display", Georgia, serif',
     fontWeight: 700,
     letterSpacing: '0.1em',
     fontSize: '1.5rem',
@@ -52,17 +64,18 @@ const NavLink = styled(Typography)({
     textTransform: 'uppercase',
     fontSize: '0.875rem',
     fontWeight: 500,
-    color: '#000',
-    fontFamily: 'Playfair Display',
+    color: KRAFT.cream,
+    fontFamily: '"Playfair Display", Georgia, serif',
     cursor: 'pointer',
+    letterSpacing: '0.04em',
     '&:after': {
         content: '""',
         position: 'absolute',
         width: 0,
         height: '1px',
-        bottom: 0,
+        bottom: -4,
         left: 0,
-        backgroundColor: '#d1a570',
+        backgroundColor: KRAFT.bronze,
         transition: 'width 0.3s ease'
     },
     '&:hover:after': {
@@ -76,7 +89,9 @@ const CartBadge = styled(Badge)({
         right: -8,
         width: 18,
         height: 18,
-        fontSize: '0.625rem'
+        fontSize: '0.625rem',
+        backgroundColor: '#8C5A2B',
+        color: '#F4ECDC'
     }
 });
 
@@ -110,7 +125,6 @@ const Header = () => {
         setCartOpen(!cartOpen);
     };
 
-    // Update your removeItem and updateQuantity functions:
     const removeItem = (id) => {
         const updatedCart = removeFromCart(id);
         setCartItems(updatedCart);
@@ -128,7 +142,7 @@ const Header = () => {
     };
 
     const handleNavigation = (sectionId) => {
-        setMobileMenuOpen(false); // Close mobile menu when navigating
+        setMobileMenuOpen(false);
         const element = document.getElementById(sectionId);
         if (element) {
             element.scrollIntoView({
@@ -140,16 +154,23 @@ const Header = () => {
 
     return (
         <>
-            <AnnouncementBar sx={{ backgroundColor: '#C8A04D', color: '#1C1C1C', fontSize: '0.70rem' }}>
-            Al-Mala Fragrance is your destination for luxury perfumes at budget-friendly prices.
+            {/* Announcement bar — bronze stamp-ink stripe, like the foil line on the box */}
+            <AnnouncementBar sx={{
+                backgroundColor: KRAFT.bronze,
+                color: KRAFT.cream,
+                fontSize: '0.70rem',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase'
+            }}>
+                Al-Mala Fragrance is your destination for luxury perfumes at budget-friendly prices.
             </AnnouncementBar>
 
             <AppBar
                 position="sticky"
                 elevation={0}
                 sx={{
-                    backgroundColor: '#1C1C1C',
-                    borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+                    backgroundColor: KRAFT.ink,
+                    borderBottom: `1px solid ${KRAFT.bronze}`,
                     zIndex: 1200
                 }}
             >
@@ -161,62 +182,50 @@ const Header = () => {
                     }}>
                         {/* Left Navigation - Desktop */}
                         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 4 }}>
-                            <NavLink sx={{ color: '#fff', fontFamily: 'Playfair Display' }} onClick={() => handleNavigation('home')}>Home</NavLink>
-                            <NavLink sx={{ color: '#fff', fontFamily: 'Playfair Display' }} onClick={() => handleNavigation('products')}>Products</NavLink>
+                            <NavLink onClick={() => handleNavigation('home')}>Home</NavLink>
+                            <NavLink onClick={() => handleNavigation('products')}>Products</NavLink>
                         </Box>
 
                         {/* Mobile Menu Button */}
                         <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-                            <IconButton sx={{ color: '#fff' }} onClick={toggleMobileMenu}>
+                            <IconButton sx={{ color: KRAFT.cream }} onClick={toggleMobileMenu}>
                                 {mobileMenuOpen ? <Close /> : <Menu />}
                             </IconButton>
                         </Box>
 
                         {/* Logo */}
-                        {/* <Box sx={{
-                            flex: 1,
-                            textAlign: 'center',
-                            [theme.breakpoints.up('md')]: {
-                                flex: 'none',
-                                width: 'auto'
-                            }
-                        }}> */}
-                            <Box
-                                component="img"
-                                src={logo}
-                                alt="AL MALA Logo"
-                                onClick={() => handleNavigation('home')}
-                                sx={{
-                                    height: { xs: 40, md: 60 },
-                                    maxHeight: { xs: 60, md: 80 },
-                                    // height: 'auto',
-                                    width: 'auto',
-                                    cursor: 'pointer',
-                                    objectFit: 'cover',
-                                    maxWidth: '100%',
-                                    transition: 'transform 0.3s ease',
-                                    '&:hover': {
-                                        transform: 'scale(1.20)'
-                                    }
-                                }}
-                            />
-                        {/* </Box> */}
+                        <Box
+                            component="img"
+                            src={logo}
+                            alt="AL MALA Logo"
+                            onClick={() => handleNavigation('home')}
+                            sx={{
+                                height: { xs: 40, md: 60 },
+                                maxHeight: { xs: 60, md: 80 },
+                                width: 'auto',
+                                cursor: 'pointer',
+                                objectFit: 'cover',
+                                maxWidth: '100%',
+                                transition: 'transform 0.3s ease',
+                                transform: 'scale(1.20)',
+                                '&:hover': {
+                                    transform: 'scale(1.20)'
+                                }
+                            }}
+                        />
 
                         {/* Right Navigation - Desktop */}
                         <Box sx={{
                             display: { xs: 'none', md: 'flex' },
                             gap: 4,
-                            color: '#fff',
                             alignItems: 'center'
                         }}>
-                            <NavLink sx={{ color: '#fff', fontFamily: 'Playfair Display' }} onClick={() => handleNavigation('stories')}>Stories</NavLink>
-                            <NavLink sx={{ color: '#fff', fontFamily: 'Playfair Display' }} onClick={() => handleNavigation('contact')}>Contact</NavLink>
+                            <NavLink onClick={() => handleNavigation('stories')}>Stories</NavLink>
+                            <NavLink onClick={() => handleNavigation('contact')}>Contact</NavLink>
 
-                            {/* Update both cart icons in the header */}
-                            <IconButton sx={{ color: '#fff' }} onClick={toggleCart}>
+                            <IconButton sx={{ color: KRAFT.cream }} onClick={toggleCart}>
                                 <CartBadge
                                     badgeContent={cartItems.reduce((total, item) => total + item.quantity, 0)}
-                                    color="secondary"
                                 >
                                     <ShoppingBag />
                                 </CartBadge>
@@ -225,11 +234,9 @@ const Header = () => {
 
                         {/* Cart Icon - Mobile */}
                         <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-                            <IconButton sx={{ color: '#fff' }} onClick={toggleCart}>
+                            <IconButton sx={{ color: KRAFT.cream }} onClick={toggleCart}>
                                 <CartBadge
                                     badgeContent={cartItems.reduce((total, item) => total + item.quantity, 0)}
-                                    color="secondary"
-
                                 >
                                     <ShoppingBag />
                                 </CartBadge>
@@ -246,12 +253,13 @@ const Header = () => {
                                     primaryTypographyProps={{
                                         textTransform: 'uppercase',
                                         fontSize: '0.875rem',
-                                        color: '#fff',
+                                        color: KRAFT.cream,
+                                        fontFamily: '"Playfair Display", Georgia, serif',
                                         fontWeight: 500
                                     }}
                                 />
                             </ListItem>
-                            <Divider />
+                            <Divider sx={{ borderColor: 'rgba(244,236,220,0.15)' }} />
 
                             <ListItem button onClick={() => handleNavigation('contact')}>
                                 <ListItemText
@@ -259,12 +267,13 @@ const Header = () => {
                                     primaryTypographyProps={{
                                         textTransform: 'uppercase',
                                         fontSize: '0.875rem',
-                                        color: '#fff',
+                                        color: KRAFT.cream,
+                                        fontFamily: '"Playfair Display", Georgia, serif',
                                         fontWeight: 500
                                     }}
                                 />
                             </ListItem>
-                            <Divider />
+                            <Divider sx={{ borderColor: 'rgba(244,236,220,0.15)' }} />
 
                             <ListItem button onClick={() => handleNavigation('stories')}>
                                 <ListItemText
@@ -272,12 +281,13 @@ const Header = () => {
                                     primaryTypographyProps={{
                                         textTransform: 'uppercase',
                                         fontSize: '0.875rem',
-                                        color: '#fff',
+                                        color: KRAFT.cream,
+                                        fontFamily: '"Playfair Display", Georgia, serif',
                                         fontWeight: 500
                                     }}
                                 />
                             </ListItem>
-                            <Divider />
+                            <Divider sx={{ borderColor: 'rgba(244,236,220,0.15)' }} />
 
                             <ListItem button onClick={() => handleNavigation('products')}>
                                 <ListItemText
@@ -285,7 +295,8 @@ const Header = () => {
                                     primaryTypographyProps={{
                                         textTransform: 'uppercase',
                                         fontSize: '0.875rem',
-                                        color: '#fff',
+                                        color: KRAFT.cream,
+                                        fontFamily: '"Playfair Display", Georgia, serif',
                                         fontWeight: 500
                                     }}
                                 />
@@ -294,6 +305,8 @@ const Header = () => {
                     </MobileMenu>
                 </Container>
             </AppBar>
+
+            {/* Cart Drawer — recolored to read like the inside of the box: cream stock, ink type, bronze accents */}
             <Drawer
                 anchor="right"
                 open={cartOpen}
@@ -305,6 +318,7 @@ const Header = () => {
                         boxSizing: 'border-box',
                         height: '100%',
                         overflow: 'hidden',
+                        backgroundColor: KRAFT.cream,
                     },
                 }}
             >
@@ -320,17 +334,21 @@ const Header = () => {
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         p: 2,
-                        borderBottom: '1px solid',
-                        borderColor: 'divider',
+                        borderBottom: `1px solid ${KRAFT.paperDark}`,
                         position: 'sticky',
                         top: 0,
-                        bgcolor: 'background.paper',
+                        bgcolor: KRAFT.cream,
                         zIndex: 1
                     }}>
-                        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>
+                        <Typography variant="h6" sx={{
+                            fontWeight: 700,
+                            fontSize: '1.1rem',
+                            fontFamily: '"Playfair Display", Georgia, serif',
+                            color: KRAFT.ink
+                        }}>
                             Your Cart ({cartItems.length})
                         </Typography>
-                        <IconButton onClick={toggleCart} size="small">
+                        <IconButton onClick={toggleCart} size="small" sx={{ color: KRAFT.ink }}>
                             <Close />
                         </IconButton>
                     </Box>
@@ -344,10 +362,10 @@ const Header = () => {
                             width: '4px',
                         },
                         '&::-webkit-scrollbar-track': {
-                            background: theme.palette.grey[100],
+                            background: KRAFT.paperLight,
                         },
                         '&::-webkit-scrollbar-thumb': {
-                            background: theme.palette.grey[400],
+                            background: KRAFT.paperDark,
                             borderRadius: '2px',
                         }
                     }}>
@@ -361,12 +379,22 @@ const Header = () => {
                                 textAlign: 'center',
                                 p: 3
                             }}>
-                                <ShoppingBag sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                                <Typography variant="body1" sx={{ mb: 1 }}>Your cart is empty</Typography>
+                                <ShoppingBag sx={{ fontSize: 48, color: KRAFT.paperDark, mb: 2 }} />
+                                <Typography variant="body1" sx={{ mb: 1, color: KRAFT.ink }}>Your cart is empty</Typography>
                                 <Button
                                     variant="outlined"
                                     onClick={toggleCart}
-                                    sx={{ mt: 2 }}
+                                    sx={{
+                                        mt: 2,
+                                        borderColor: KRAFT.ink,
+                                        color: KRAFT.ink,
+                                        borderRadius: '2px',
+                                        '&:hover': {
+                                            bgcolor: KRAFT.ink,
+                                            color: KRAFT.cream,
+                                            borderColor: KRAFT.ink
+                                        }
+                                    }}
                                 >
                                     Continue Shopping
                                 </Button>
@@ -393,6 +421,7 @@ const Header = () => {
                                                     sx={{
                                                         width: 70,
                                                         height: 70,
+                                                        border: `1px solid ${KRAFT.paperDark}`,
                                                         [theme.breakpoints.down('sm')]: {
                                                             width: 60,
                                                             height: 60
@@ -415,17 +444,20 @@ const Header = () => {
                                                         primary={item.name}
                                                         secondary={item.description}
                                                         primaryTypographyProps={{
-                                                            fontWeight: 'medium',
-                                                            fontSize: '0.95rem'
+                                                            fontWeight: 600,
+                                                            fontSize: '0.95rem',
+                                                            color: KRAFT.ink,
+                                                            fontFamily: '"Playfair Display", Georgia, serif'
                                                         }}
-                                                        secondaryTypographyProps={{ fontSize: '0.8rem' }}
+                                                        secondaryTypographyProps={{ fontSize: '0.8rem', color: 'rgba(33,26,18,0.6)' }}
                                                     />
                                                     <IconButton
                                                         onClick={() => removeItem(item.id)}
                                                         size="small"
                                                         sx={{
                                                             ml: 1,
-                                                            alignSelf: 'flex-start'
+                                                            alignSelf: 'flex-start',
+                                                            color: KRAFT.bronze
                                                         }}
                                                     >
                                                         <Delete fontSize="small" />
@@ -440,33 +472,32 @@ const Header = () => {
                                                     <Box sx={{
                                                         display: 'flex',
                                                         alignItems: 'center',
-                                                        border: '1px solid',
-                                                        borderColor: 'divider',
-                                                        borderRadius: 1
+                                                        border: `1px solid ${KRAFT.paperDark}`,
+                                                        borderRadius: '2px'
                                                     }}>
                                                         <IconButton
                                                             size="small"
                                                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                            sx={{ p: 0.5 }}
+                                                            sx={{ p: 0.5, color: KRAFT.ink }}
                                                         >
                                                             <Remove fontSize="small" />
                                                         </IconButton>
-                                                        <Typography sx={{ px: 1 }}>{item.quantity}</Typography>
+                                                        <Typography sx={{ px: 1, color: KRAFT.ink }}>{item.quantity}</Typography>
                                                         <IconButton
                                                             size="small"
                                                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                            sx={{ p: 0.5 }}
+                                                            sx={{ p: 0.5, color: KRAFT.ink }}
                                                         >
                                                             <Add fontSize="small" />
                                                         </IconButton>
                                                     </Box>
-                                                    <Typography variant="body1" fontWeight="medium">
+                                                    <Typography variant="body1" fontWeight={600} sx={{ color: KRAFT.ink }}>
                                                         Rs.{(item.discountedPrice * item.quantity).toFixed(2)}
                                                     </Typography>
                                                 </Box>
                                             </Box>
                                         </ListItem>
-                                        <Divider sx={{ my: 1 }} />
+                                        <Divider sx={{ my: 1, borderStyle: 'dashed', borderColor: KRAFT.paperDark }} />
                                     </React.Fragment>
                                 ))}
                             </List>
@@ -477,25 +508,25 @@ const Header = () => {
                     {cartItems.length > 0 && (
                         <Box sx={{
                             p: 2,
-                            borderTop: '1px solid',
-                            borderColor: 'divider',
+                            borderTop: `1px solid ${KRAFT.paperDark}`,
                             position: 'sticky',
                             bottom: 0,
-                            bgcolor: 'background.paper'
+                            bgcolor: KRAFT.cream
                         }}>
                             <Box sx={{
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 mb: 1
                             }}>
-                                <Typography variant="subtitle1">Subtotal</Typography>
-                                <Typography variant="subtitle1" fontWeight="medium">
+                                <Typography variant="subtitle1" sx={{ color: KRAFT.ink }}>Subtotal</Typography>
+                                <Typography variant="subtitle1" fontWeight={600} sx={{ color: KRAFT.ink }}>
                                     Rs.{subtotal.toFixed(2)}
                                 </Typography>
                             </Box>
-                            <Typography variant="body2" color="text.secondary" sx={{
+                            <Typography variant="body2" sx={{
                                 mb: 2,
-                                fontSize: '0.75rem'
+                                fontSize: '0.75rem',
+                                color: 'rgba(33,26,18,0.6)'
                             }}>
                                 Shipping and taxes calculated at checkout.
                             </Typography>
@@ -506,8 +537,11 @@ const Header = () => {
                                 onClick={() => navigate('check-out')}
                                 sx={{
                                     py: 1.5,
-                                    backgroundColor: 'black',
-                                    '&:hover': { backgroundColor: 'grey.800' },
+                                    backgroundColor: KRAFT.ink,
+                                    borderRadius: '2px',
+                                    letterSpacing: '0.05em',
+                                    textTransform: 'uppercase',
+                                    '&:hover': { backgroundColor: KRAFT.bronze },
                                     fontSize: '0.9rem'
                                 }}
                             >
@@ -520,7 +554,7 @@ const Header = () => {
                                 onClick={toggleCart}
                                 sx={{
                                     mt: 1,
-                                    color: 'text.primary',
+                                    color: KRAFT.ink,
                                     fontSize: '0.8rem'
                                 }}
                             >

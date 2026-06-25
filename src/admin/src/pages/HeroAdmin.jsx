@@ -13,7 +13,7 @@ import {
     CircularProgress,
 } from '@mui/material';
 import { getHeroData, setHeroData, deleteHeroData } from '../services/heroService';
-import heroImage from '../../../assets/hero.jpg';
+import heroImage from '../../../assets/hero1.png';
 
 const DEFAULT_HERO = {
     title: 'Discover Your Signature Scent',

@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   Container,
   Typography,
   Card,
-  CardMedia,
   CardContent,
   Button,
   Box,
   IconButton,
-  useTheme, CircularProgress,
+  useTheme, 
+  CircularProgress,
   useMediaQuery,
-  Snackbar, Alert, AlertTitle,
-  Fade
+  Snackbar, 
+  Alert, 
+  AlertTitle,
 } from '@mui/material';
 import {
   KeyboardArrowLeft as ArrowBackIcon,
@@ -24,28 +25,69 @@ import { addToCart } from '../utils/cart';
 import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../admin/src/services/productService';
 
+// ---------------------------------------------------------------------------
+// AL-MALA — "Kraft & Ink" theme tokens
+// ---------------------------------------------------------------------------
+const KRAFT = {
+  paper: '#D9BD93',
+  paperLight: '#E7D3AE',
+  paperDark: '#B99564',
+  ink: '#211A12',
+  cream: '#F4ECDC',
+  bronze: '#8C5A2B',
+};
+
+// Fluid high-end animation curve used by luxury apparel brands
+const PREMIUM_CUBIC = 'cubic-bezier(0.25, 1, 0.5, 1)';
+
 const ProductShowcase = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [sliding, setSliding] = useState(false);
   const [direction, setDirection] = useState('next');
+  const [isAnimating, setIsAnimating] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  
   const sliderRef = useRef(null);
   const intervalRef = useRef(null);
-  const [cart, setCart] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const navigate = useNavigate();
+  
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [autoPlay, setAutoPlay] = useState(true);
 
+  const ANIMATION_DURATION = 650; // Sweeping, premium feel
+  const AUTO_PLAY_DELAY = 5000;
+  const MIN_SWIPE_DISTANCE = 50;
+
+  // Memoized image preloader to eliminate multi-render churn
+  const preloadAllImages = useCallback((items) => {
+    if (!items || items.length === 0) return;
+    items.forEach(product => {
+      if (product?.image) {
+        const img = new Image();
+        img.src = product.image;
+      }
+      if (Array.isArray(product?.images)) {
+        product.images.forEach(imgUrl => {
+          const img = new Image();
+          img.src = imgUrl;
+        });
+      }
+    });
+  }, []);
+
+  // Fetch products and kick off a one-time preloader trigger
   useEffect(() => {
     const unsubscribe = getProducts((data) => {
       setProducts(data);
       setLoading(false);
+      preloadAllImages(data);
     }, (error) => {
       setError('Failed to load products');
       setLoading(false);
@@ -53,163 +95,76 @@ const ProductShowcase = () => {
     });
 
     return () => unsubscribe();
-  }, []);
-  // Load cart from localStorage on component mount
-  useEffect(() => {
-    const savedCart = localStorage.getItem('fragranceCart');
-    if (savedCart) {
-      setCart(JSON.parse(savedCart));
-    }
-  }, []);
+  }, [preloadAllImages]);
 
+  // Enforce index boundaries safely if data structure mutations occur
   useEffect(() => {
     if (products.length > 0 && currentIndex >= products.length) {
       setCurrentIndex(0);
     }
+  }, [products, currentIndex]);
 
-    preloadAllImages();
-  }, [products]);
-
-  // Update the addToCart function to properly update localStorage
-  const handleAddToCart = (product) => {
-    const updatedCart = addToCart(product);
+  const handleAddToCart = (product, e) => {
+    e.stopPropagation();
+    if (isAnimating) return;
+    addToCart(product);
     setSnackbarOpen(true);
-    // Notify other components (like Header) about the cart update
     window.dispatchEvent(new Event('cartUpdated'));
   };
 
-  // Minimum swipe distance
-  const minSwipeDistance = 50;
+  const handleNext = useCallback(() => {
+    if (isAnimating || !products || products.length <= 1) return;
+    
+    setIsAnimating(true);
+    setDirection('next');
+    setCurrentIndex(prev => (prev + 1) % products.length);
+    
+    setTimeout(() => setIsAnimating(false), ANIMATION_DURATION);
+  }, [isAnimating, products]);
 
-  // Auto play settings
-  const autoPlayDelay = 5000; // 5 seconds
-  const [autoPlay, setAutoPlay] = useState(true);
+  const handlePrev = useCallback(() => {
+    if (isAnimating || !products || products.length <= 1) return;
+    
+    setIsAnimating(true);
+    setDirection('prev');
+    setCurrentIndex(prev => prev === 0 ? products.length - 1 : prev - 1);
+    
+    setTimeout(() => setIsAnimating(false), ANIMATION_DURATION);
+  }, [isAnimating, products]);
 
-  // Handle auto play
+  // Autoplay handler
   useEffect(() => {
-    if (autoPlay) {
+    if (autoPlay && products.length > 1) {
       intervalRef.current = setInterval(() => {
         handleNext();
-      }, autoPlayDelay);
+      }, AUTO_PLAY_DELAY);
     }
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [autoPlay, currentIndex]);
-
-  // Pause autoplay on hover
-  const handleMouseEnter = () => {
-    setAutoPlay(false);
-  };
-
-  const handleMouseLeave = () => {
-    setAutoPlay(true);
-  };
-
-  // Preload images for smoother transitions
-  const preloadImages = () => {
-    if (!products || products.length === 0) return;
-
-    // Preload next and previous images
-    const nextIndex = (currentIndex + 1) % products.length;
-    const prevIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
-
-    [nextIndex, prevIndex].forEach(index => {
-      const product = products[index];
-      if (!product) return;
-
-      const imageUrl = Array.isArray(product.images) && product.images.length > 0
-        ? product.images[0]
-        : product.image;
-
-      if (imageUrl) {
-        const img = new Image();
-        img.src = imageUrl;
-      }
-    });
-  };
-
-  // Preload images when component mounts or products change
-  useEffect(() => {
-    preloadImages();
-  }, [products, currentIndex]);
-
-  const handleNext = () => {
-    if (sliding || !products || products.length === 0) return;
-
-    const nextIndex = (currentIndex + 1) % products.length;
-    setDirection('next');
-    setSliding(true);
-
-    // Use requestAnimationFrame for smoother animations
-    requestAnimationFrame(() => {
-      setCurrentIndex(nextIndex);
-      setTimeout(() => {
-        setSliding(false);
-      }, 400); // Match this with the CSS transition duration
-    });
-  };
-
-  // Apply similar safety checks to handlePrev and goToSlide
-  const handlePrev = () => {
-    if (sliding || !products || products.length === 0) return;
-
-    const prevIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
-    setDirection('prev');
-    setSliding(true);
-
-    // Use requestAnimationFrame for smoother animations
-    requestAnimationFrame(() => {
-      setCurrentIndex(prevIndex);
-      setTimeout(() => {
-        setSliding(false);
-      }, 400); // Match this with the CSS transition duration
-    });
-  };
+  }, [autoPlay, handleNext, products.length]);
 
   const goToSlide = (index) => {
-    if (sliding || index === currentIndex || !products || products.length === 0) return;
-
+    if (isAnimating || index === currentIndex || !products || products.length <= 1) return;
+    
+    setIsAnimating(true);
     setDirection(index > currentIndex ? 'next' : 'prev');
-    setSliding(true);
-
-    // Use requestAnimationFrame for smoother animations
-    requestAnimationFrame(() => {
-      setCurrentIndex(index);
-      setTimeout(() => {
-        setSliding(false);
-      }, 400); // Match this with the CSS transition duration
-    });
+    setCurrentIndex(index);
+    
+    setTimeout(() => setIsAnimating(false), ANIMATION_DURATION);
   };
 
-  // Update the preloadAllImages function with safety checks
-  const preloadAllImages = () => {
-    if (!products || products.length === 0) return;
-
-    products.forEach(product => {
-      if (product && product.image) {
-        const img = new Image();
-        img.src = product.image;
-      }
-    });
-  };
-
-  // Fix the getVisibleProducts function to handle empty products
-  const getVisibleProducts = () => {
-    if (!products || products.length === 0) {
-      return [];
-    }
+  // Compute layout structure on critical path indices mutations
+  const visibleProducts = useMemo(() => {
+    if (!products || products.length === 0) return [];
 
     if (isMobile) {
-      return [
-        { ...products[currentIndex], position: 'center' }
-      ];
-    } else if (isTablet) {
-      // For tablets, show 2 products
-      let visible = [];
+      return [{ ...products[currentIndex], position: 'center' }];
+    }
+    
+    if (isTablet) {
+      const visible = [];
       for (let i = 0; i < Math.min(2, products.length); i++) {
         const index = (currentIndex + i) % products.length;
         visible.push({
@@ -218,263 +173,213 @@ const ProductShowcase = () => {
         });
       }
       return visible;
-    } else {
-      // For desktop, show 3 products, but only if we have enough products
-      let visible = [];
-      if (products.length >= 3) {
-        const prevIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
-        const nextIndex = (currentIndex + 1) % products.length;
-
-        visible.push({ ...products[prevIndex], position: 'left' });
-        visible.push({ ...products[currentIndex], position: 'center' });
-        visible.push({ ...products[nextIndex], position: 'right' });
-      } else if (products.length === 2) {
-        // Only 2 products available
-        visible.push({ ...products[0], position: 'left' });
-        visible.push({ ...products[1], position: 'center' });
-      } else if (products.length === 1) {
-        // Only 1 product available
-        visible.push({ ...products[0], position: 'center' });
-      }
-      return visible;
     }
-  };
+    
+    if (products.length >= 3) {
+      const prevIndex = currentIndex === 0 ? products.length - 1 : currentIndex - 1;
+      const nextIndex = (currentIndex + 1) % products.length;
+      
+      return [
+        { ...products[prevIndex], position: 'left' },
+        { ...products[currentIndex], position: 'center' },
+        { ...products[nextIndex], position: 'right' }
+      ];
+    }
+    
+    if (products.length === 2) {
+      return [
+        { ...products[0], position: 'left' },
+        { ...products[1], position: 'center' }
+      ];
+    }
+    
+    return [{ ...products[0], position: 'center' }];
+  }, [products, currentIndex, isMobile, isTablet]);
 
+  // Touch handlers
   const handleTouchStart = (e) => {
     setTouchStart(e.targetTouches[0].clientX);
-    setAutoPlay(false); // Pause autoplay on touch
+    setAutoPlay(false);
   };
 
-  const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
+  const handleTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
 
   const handleTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe) {
-      handleNext();
-    } else if (isRightSwipe) {
-      handlePrev();
-    }
+    if (distance > MIN_SWIPE_DISTANCE) handleNext();
+    else if (distance < -MIN_SWIPE_DISTANCE) handlePrev();
 
     setTouchStart(null);
     setTouchEnd(null);
-    setAutoPlay(true); // Resume autoplay after touch
+    setAutoPlay(true);
   };
 
-  const visibleProducts = getVisibleProducts();
-
-  // Enhanced slide animation styles with optimized transitions
-  const getSlideStyle = (position) => {
-    const transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
-
+  // Dynamic style engine translating stage positions into beautiful transitions
+  const getCardAnimationStyle = (position) => {
+    const baseTransition = `all ${ANIMATION_DURATION}ms ${PREMIUM_CUBIC}`;
+    
     if (isMobile) {
-      if (sliding) {
-        return {
-          transform: direction === 'next' ? 'translateX(-100%)' : 'translateX(100%)',
-          opacity: 0,
-          transition,
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          backfaceVisibility: 'hidden',
-          WebkitBackfaceVisibility: 'hidden',
-          willChange: 'transform, opacity',
-          transformStyle: 'preserve-3d'
-        };
-      }
       return {
-        transform: 'translateX(0)',
+        position: 'absolute',
+        width: '100%',
+        transform: 'translateX(0) scale(1)',
         opacity: 1,
-        transition,
-        position: 'relative',
-        backfaceVisibility: 'hidden',
-        WebkitBackfaceVisibility: 'hidden',
-        willChange: 'transform, opacity',
-        transformStyle: 'preserve-3d'
-      };
-    } else if (isTablet) {
-      // Tablet styles with hardware acceleration
-      const baseStyles = {
-        transform: position === 'center-left' ? 'translateX(5%)' : 'translateX(-5%)',
-        opacity: 1,
-        transition,
-        backfaceVisibility: 'hidden',
-        WebkitBackfaceVisibility: 'hidden',
-        willChange: 'transform, opacity',
-        transformStyle: 'preserve-3d',
-        position: 'relative'
-      };
-
-      if (sliding) {
-        return {
-          ...baseStyles,
-          transform: direction === 'next' ? 'translateX(-100%)' : 'translateX(100%)',
-          opacity: 0,
-          position: 'absolute',
-          width: '100%',
-          height: '100%'
-        };
-      }
-      return baseStyles;
-    } else {
-      // Desktop styles with enhanced 3D effect
-      const positionStyles = {
-        left: {
-          transform: 'translateX(-10%) scale(0.85) perspective(1000px) rotateY(5deg)',
-          opacity: 1,
-          filter: 'blur(0)',
-          zIndex: 1
-        },
-        center: {
-          transform: 'translateX(0) scale(1) perspective(1000px) rotateY(0deg)',
-          opacity: 1,
-          filter: 'blur(0)',
-          zIndex: 3
-        },
-        right: {
-          transform: 'translateX(10%) scale(0.85) perspective(1000px) rotateY(-5deg)',
-          opacity: 1,
-          filter: 'blur(0)',
-          zIndex: 1
-        }
-      };
-
-      if (sliding) {
-        const slideStyles = { transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)' };
-
-        if (direction === 'next') {
-          return {
-            ...positionStyles[position],
-            ...slideStyles,
-            transform: position === 'center' ? positionStyles.left.transform :
-              position === 'right' ? positionStyles.center.transform :
-                'translateX(-30%) scale(0.7) perspective(1000px) rotateY(10deg)',
-            opacity: position === 'right' ? positionStyles.center.opacity :
-              position === 'center' ? positionStyles.left.opacity : 0,
-            filter: position === 'right' ? positionStyles.center.filter :
-              position === 'center' ? positionStyles.left.filter : 'blur(2px)',
-            zIndex: position === 'right' ? positionStyles.center.zIndex :
-              position === 'center' ? positionStyles.left.zIndex : 0
-          };
-        } else {
-          return {
-            ...positionStyles[position],
-            ...slideStyles,
-            transform: position === 'center' ? positionStyles.right.transform :
-              position === 'left' ? positionStyles.center.transform :
-                'translateX(30%) scale(0.7) perspective(1000px) rotateY(-10deg)',
-            opacity: position === 'left' ? positionStyles.center.opacity :
-              position === 'center' ? positionStyles.right.opacity : 0,
-            filter: position === 'left' ? positionStyles.center.filter :
-              position === 'center' ? positionStyles.right.filter : 'blur(2px)',
-            zIndex: position === 'left' ? positionStyles.center.zIndex :
-              position === 'center' ? positionStyles.right.zIndex : 0
-          };
-        }
-      }
-
-      return {
-        ...positionStyles[position],
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+        transition: baseTransition,
+        pointerEvents: isAnimating ? 'none' : 'auto',
       };
     }
+    
+    if (isTablet) {
+      const positions = {
+        'center-left': { transform: 'translateX(8%) scale(0.96)', opacity: 0.95, zIndex: 1 },
+        'center-right': { transform: 'translateX(-8%) scale(0.96)', opacity: 0.95, zIndex: 1 }
+      };
+      
+      return {
+        position: 'relative',
+        ...positions[position],
+        transition: baseTransition,
+        pointerEvents: isAnimating ? 'none' : 'auto',
+      };
+    }
+    
+    // Luxury 3D Depth stage layout updates
+    // NOTE: no blur() here on purpose — blur on the side cards is what made
+    // them look "blurry" during/after the slide. Depth is conveyed with
+    // scale/opacity/brightness only, which keeps the side cards crisp.
+    const positions = {
+      left: {
+        transform: 'translateX(-105%) scale(0.82) rotateY(12deg) translateZ(-150px)',
+        opacity: 0.6,
+        zIndex: 1,
+        filter: 'brightness(0.9)',
+      },
+      center: {
+        transform: 'translateX(0) scale(1.04) rotateY(0deg) translateZ(50px)',
+        opacity: 1,
+        zIndex: 5,
+        filter: 'brightness(1)',
+      },
+      right: {
+        transform: 'translateX(105%) scale(0.82) rotateY(-12deg) translateZ(-150px)',
+        opacity: 0.6,
+        zIndex: 1,
+        filter: 'brightness(0.9)',
+      }
+    };
+    
+    return {
+      position: 'absolute',
+      ...positions[position],
+      transition: baseTransition,
+      transformStyle: 'preserve-3d',
+      pointerEvents: isAnimating || position !== 'center' ? 'none' : 'auto',
+    };
   };
 
   return (
     <Box
       sx={{
-        py: 10,
-        bgcolor: 'background.default',
+        py: { xs: 6, md: 12 },
+        bgcolor: KRAFT.cream,
         position: 'relative',
         overflow: 'hidden',
-        backgroundImage: 'linear-gradient(to bottom, rgba(245,245,245,0.8), rgba(245,245,245,0.4))',
+        backgroundImage: `radial-gradient(${KRAFT.ink}12 0.8px, transparent 0.8px)`,
+        backgroundSize: '8px 8px',
       }}
     >
       <Container maxWidth="xl">
+        {/* Global Brand Header */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 1.5,
+              border: `1px solid ${KRAFT.bronze}80`,
+              borderRadius: '999px',
+              px: 2.5,
+              py: 0.75,
+              bgcolor: `${KRAFT.cream}80`,
+              backdropFilter: 'blur(4px)'
+            }}
+          >
+            <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: KRAFT.bronze }} />
+            <Typography
+              variant="overline"
+              sx={{ color: KRAFT.bronze, fontSize: '0.7rem', letterSpacing: '0.3em', fontWeight: 600, lineHeight: 1 }}
+            >
+              AL-MALA FRAGRANCES
+            </Typography>
+          </Box>
+        </Box>
+
         <Typography
           variant="h2"
           align="center"
           gutterBottom
           sx={{
             position: 'relative',
-            mb: {
-              xs: 3,
-              sm: 5,
-              md: 6
-            },
+            mb: { xs: 6, md: 10 },
+            fontFamily: '"Playfair Display", Georgia, serif',
             fontWeight: 700,
-            fontSize: {
-              xs: '2rem',    // Small mobile screens
-              sm: '2.5rem',  // Larger mobile/small tablet screens
-              md: '3rem',    // Medium screens (tablets)
-              lg: '3.5rem',  // Large screens (desktop)
-            },
-            backgroundImage: 'linear-gradient(45deg, #333, #666)',
-            backgroundClip: 'text',
-            color: 'transparent',
+            fontSize: { xs: '2.25rem', sm: '2.75rem', md: '3.5rem' },
+            color: KRAFT.ink,
             '&:after': {
               content: '""',
               position: 'absolute',
-              bottom: -16,
+              bottom: -20,
               left: '50%',
               transform: 'translateX(-50%)',
-              width: {
-                xs: 30,  // Smaller line on mobile
-                sm: 80,  // Medium line on tablets
-                md: 100, // Full width line on desktop
-              },
-              height: 3,
-              backgroundImage: 'linear-gradient(to right, #333, #666)',
-              borderRadius: 4
+              width: 60,
+              height: 0,
+              borderTop: `2px dashed ${KRAFT.bronze}`,
             }
           }}
         >
           Our Signature Scents
         </Typography>
+        
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-            <CircularProgress />
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 450 }}>
+            <CircularProgress size={32} sx={{ color: KRAFT.bronze }} />
           </Box>
         ) : error ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-            <Typography color="error">{error}</Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 450 }}>
+            <Typography color="error" sx={{ fontFamily: 'serif', italic: true }}>{error}</Typography>
           </Box>
         ) : products.length === 0 ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-            <Typography>No products available</Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 450 }}>
+            <Typography sx={{ color: KRAFT.ink, opacity: 0.6 }}>No signature blends available</Typography>
           </Box>
         ) : (
           <Box
             sx={{
               position: 'relative',
               width: '100%',
-              height: isMobile ? 580 : isTablet ? 550 : 600,
+              height: isMobile ? 590 : isTablet ? 560 : 640,
               mx: 'auto',
-              mb: 6
+              perspective: '1600px',
             }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+            onMouseEnter={() => setAutoPlay(false)}
+            onMouseLeave={() => setAutoPlay(true)}
             ref={sliderRef}
           >
-            {/* Custom progress indicator */}
+            {/* Linear Progress Indicator */}
             <Box
               sx={{
                 position: 'absolute',
-                bottom: -30,
+                bottom: -40,
                 left: '50%',
                 transform: 'translateX(-50%)',
-                width: 200,
+                width: 160,
                 height: 2,
-                bgcolor: 'rgba(0,0,0,0.1)',
-                borderRadius: 5,
+                bgcolor: `${KRAFT.ink}15`,
+                borderRadius: 1,
                 overflow: 'hidden',
                 zIndex: 3
               }}
@@ -483,16 +388,15 @@ const ProductShowcase = () => {
                 sx={{
                   height: '100%',
                   width: `${100 / products.length}%`,
-                  bgcolor: 'primary.main',
-                  borderRadius: 5,
+                  bgcolor: KRAFT.bronze,
                   position: 'absolute',
                   left: `${(currentIndex / products.length) * 100}%`,
-                  transition: 'left 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                  transition: `left ${ANIMATION_DURATION}ms ${PREMIUM_CUBIC}`
                 }}
               />
             </Box>
 
-            {/* Navigation arrows for all devices */}
+            {/* Dynamic Navigation System */}
             <Box
               sx={{
                 position: 'absolute',
@@ -501,92 +405,60 @@ const ProductShowcase = () => {
                 width: '100%',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                zIndex: 4,
+                zIndex: 10,
                 pointerEvents: 'none',
-                px: { xs: 1, md: 0 }
+                px: { xs: 2, xl: 6 }
               }}
             >
               <IconButton
                 onClick={handlePrev}
+                disabled={isAnimating}
                 sx={{
-                  bgcolor: 'rgba(255,255,255,0.9)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                  backdropFilter: 'blur(5px)',
-                  color: 'text.primary',
-                  transition: 'all 0.2s',
-                  width: { xs: 40, md: 56 },
-                  height: { xs: 40, md: 56 },
+                  bgcolor: KRAFT.cream,
+                  border: `1px solid ${KRAFT.paperDark}`,
+                  boxShadow: '0 6px 20px rgba(33,26,18,0.08)',
+                  color: KRAFT.ink,
+                  width: { xs: 44, md: 54 },
+                  height: { xs: 44, md: 54 },
                   pointerEvents: 'auto',
-                  alignContent: 'center',
-                  justifyContent: 'center',
-                  alignItems: 'center',
+                  transition: `all 0.3s ${PREMIUM_CUBIC}`,
                   '&:hover': {
-                    bgcolor: 'primary.main',
-                    color: 'common.white',
-                    transform: 'scale(1.1)',
-                  }
+                    bgcolor: KRAFT.ink,
+                    color: KRAFT.cream,
+                    borderColor: KRAFT.ink,
+                    transform: 'scale(1.08) translateX(-2px)',
+                  },
+                  '&:disabled': { opacity: 0.3 }
                 }}
               >
                 <ArrowBackIcon />
               </IconButton>
               <IconButton
                 onClick={handleNext}
+                disabled={isAnimating}
                 sx={{
-                  bgcolor: 'rgba(255,255,255,0.9)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                  backdropFilter: 'blur(5px)',
-                  color: 'text.primary',
-                  transition: 'all 0.2s',
-                  width: { xs: 40, md: 56 },
-                  height: { xs: 40, md: 56 },
+                  bgcolor: KRAFT.cream,
+                  border: `1px solid ${KRAFT.paperDark}`,
+                  boxShadow: '0 6px 20px rgba(33,26,18,0.08)',
+                  color: KRAFT.ink,
+                  width: { xs: 44, md: 54 },
+                  height: { xs: 44, md: 54 },
                   pointerEvents: 'auto',
+                  transition: `all 0.3s ${PREMIUM_CUBIC}`,
                   '&:hover': {
-                    bgcolor: 'primary.main',
-                    color: 'common.white',
-                    transform: 'scale(1.1)',
-                  }
+                    bgcolor: KRAFT.ink,
+                    color: KRAFT.cream,
+                    borderColor: KRAFT.ink,
+                    transform: 'scale(1.08) translateX(2px)',
+                  },
+                  '&:disabled': { opacity: 0.3 }
                 }}
               >
                 <ArrowForwardIcon />
               </IconButton>
             </Box>
 
-            {/* Dots indicator for mobile and tablet */}
-            {(isMobile || isTablet) && (
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  gap: 1,
-                  position: 'absolute',
-                  bottom: -60,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  zIndex: 2
-                }}
-              >
-                {products.map((_, index) => (
-                  <Box
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      bgcolor: currentIndex === index ? 'primary.main' : 'grey.300',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s',
-                      transform: currentIndex === index ? 'scale(1.5)' : 'scale(1)',
-                      '&:hover': {
-                        bgcolor: currentIndex === index ? 'primary.dark' : 'grey.400',
-                      }
-                    }}
-                  />
-                ))}
-              </Box>
-            )}
-
-            {/* Products slider */}
+            {/* Interactive Carousel Stage */}
             <Box
               sx={{
                 display: 'flex',
@@ -595,157 +467,144 @@ const ProductShowcase = () => {
                 width: '100%',
                 height: '100%',
                 position: 'relative',
-                perspective: 1000
+                transformStyle: 'preserve-3d',
               }}
             >
               {visibleProducts.map((product) => (
-                // <Fade key={product.id} in={!sliding} timeout={400}>
                 <Box
+                  // IMPORTANT: key by product.id ONLY (not position).
+                  // Keying by position made React unmount/remount a fresh
+                  // DOM node every time a card moved slot, which skipped
+                  // the CSS transition entirely (no slide, just a jump-cut).
+                  // Keying by id lets React keep the same node so the
+                  // transform/opacity transition actually animates.
                   key={product.id}
-                  onClick={() => navigate(`/products/${product.id}`)}
+                  onClick={() => !isAnimating && product.position === 'center' && navigate(`/products/${product.id}`)}
                   sx={{
-                    width: isMobile ? '90%' : isTablet ? '45%' : '30%',
-                    minWidth: isMobile ? '90%' : isTablet ? 300 : 350,
-                    maxWidth: isMobile ? '90%' : isTablet ? 350 : 450,
-                    position: isMobile ? 'absolute' : 'relative',
+                    width: isMobile ? '100%' : isTablet ? '47%' : '31%',
+                    maxWidth: isMobile ? '100%' : isTablet ? 360 : 420,
                     height: '100%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    ...getSlideStyle(product.position),
-                    cursor: 'pointer'
+                    ...getCardAnimationStyle(product.position),
                   }}
                 >
                   <Card
                     sx={{
                       width: '100%',
-                      height: '90%',
+                      height: '94%',
                       display: 'flex',
                       flexDirection: 'column',
-                      boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
-                      borderRadius: 3,
+                      bgcolor: KRAFT.paper,
+                      boxShadow: product.position === 'center' 
+                        ? '0 25px 50px -12px rgba(33,26,18,0.25)' 
+                        : '0 12px 30px -10px rgba(33,26,18,0.15)',
+                      borderRadius: '2px',
+                      border: `1px solid ${KRAFT.paperDark}`,
                       position: 'relative',
                       overflow: 'hidden',
-                      transition: 'all 0.3s',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        background: 'linear-gradient(to bottom, rgba(0,0,0,0) 70%, rgba(0,0,0,0.02) 100%)',
-                        zIndex: 0
-                      },
-                      '&:hover': {
-                        transform: product.position === 'center' ? 'translateY(-10px)' : 'translateY(-5px)',
-                        boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
-                      }
+                      transition: `transform 0.4s ${PREMIUM_CUBIC}, box-shadow 0.4s ${PREMIUM_CUBIC}, border-color 0.4s`,
+                      '&:hover': product.position === 'center' ? {
+                        transform: 'translateY(-12px)',
+                        borderColor: KRAFT.ink,
+                        boxShadow: '0 35px 60px -15px rgba(33,26,18,0.4)',
+                        '& .product-image': { transform: 'scale(1.06)' },
+                        '& .cart-btn': { bgcolor: KRAFT.bronze }
+                      } : {},
                     }}
                   >
+                    {/* Editorial Quality Ribbon Badge */}
                     <Box
                       sx={{
                         position: 'absolute',
-                        top: 12,
-                        left: 12,
+                        top: 16,
+                        left: 16,
                         zIndex: 2,
-                        bgcolor: 'error.main',
-                        color: 'common.white',
-                        px: 1.5,
-                        py: 0.7,
-                        borderRadius: 5,
-                        boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        minWidth: 'auto',
-                        height: 28,
-                        '& span': {
-                          fontSize: '0.7rem !important',
-                          whiteSpace: 'nowrap'
-                        }
+                        border: `1px solid ${KRAFT.ink}`,
+                        color: KRAFT.ink,
+                        px: 1.8,
+                        py: 0.4,
+                        borderRadius: '0px',
+                        bgcolor: `${KRAFT.cream}CC`,
+                        backdropFilter: 'blur(4px)'
                       }}
                     >
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          fontWeight: 'bold',
-                          textTransform: 'uppercase',
-                          fontSize: '0.7rem',
-                          whiteSpace: 'nowrap'
-                        }}
-                      >
-                        {product.badgeText || 'New'}
-                        {product.badgeText === 'sale' && (
+                      <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: '0.08em' }}>
+                        {product.badgeText || 'Signature'}
+                        {product.badgeText === 'sale' && product.discountedPrice && (
                           <> &nbsp;{Math.round(100 - (product.discountedPrice / product.price) * 100)}% Off</>
                         )}
                       </Typography>
                     </Box>
-                    {/* Favorite button */}
+                    
+                    {/* Favorite Micro-Action */}
                     <IconButton
                       size="small"
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent navigation when clicking the favorite button
-                        // Add favorite functionality here if needed
-                      }}
+                      onClick={(e) => { e.stopPropagation(); }}
                       sx={{
                         position: 'absolute',
-                        top: 12,
-                        right: 12,
-                        bgcolor: 'rgba(255,255,255,0.9)',
-                        backdropFilter: 'blur(5px)',
+                        top: 16,
+                        right: 16,
+                        bgcolor: `${KRAFT.cream}A0`,
+                        backdropFilter: 'blur(4px)',
                         zIndex: 2,
-                        transition: 'all 0.2s',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        color: KRAFT.ink,
+                        border: `1px solid transparent`,
                         '&:hover': {
-                          bgcolor: 'primary.light',
-                          color: 'primary.main',
-                          transform: 'scale(1.1)'
+                          bgcolor: KRAFT.ink,
+                          color: KRAFT.cream,
+                          borderColor: KRAFT.ink,
+                          transform: 'scale(1.1) rotate(8deg)'
                         }
                       }}
                     >
                       <FavoriteIcon fontSize="small" />
                     </IconButton>
 
+                    {/* Fluid Image Stage Frame */}
                     <Box sx={{
                       position: 'relative',
                       width: '100%',
-                      height: 300,
+                      height: 310,
                       overflow: 'hidden',
-                      backgroundColor: 'background.paper',
-                      '&:hover img': {
-                        transform: 'scale(1.03)'
-                      }
+                      backgroundColor: KRAFT.cream,
                     }}>
-                      <img
+                      <Box
+                        component="img"
+                        className="product-image"
                         src={Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : product.image}
                         alt={product.name}
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
+                          e.target.src = 'https://via.placeholder.com/400x400?text=Al-Mala+Blend';
                         }}
-                        style={{
+                        sx={{
                           width: '100%',
                           height: '100%',
                           objectFit: 'cover',
-                          transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                          backfaceVisibility: 'hidden',
-                          WebkitBackfaceVisibility: 'hidden',
-                          willChange: 'transform',
-                          transform: 'translateZ(0)',
-                          position: 'absolute',
-                          top: 0,
-                          left: 0
+                          transition: `transform 0.8s ${PREMIUM_CUBIC}`,
                         }}
-                        loading="eager"
-                        decoding="async"
+                        loading="lazy"
                       />
+                      {/* Deep internal shadow overlay for depth definition */}
+                      <Box sx={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'linear-gradient(to bottom, rgba(33,26,18,0.05) 0%, rgba(33,26,18,0) 20%, rgba(33,26,18,0.12) 100%)',
+                        pointerEvents: 'none'
+                      }} />
                     </Box>
-                    <CardContent sx={{ flexGrow: 1, p: 3, position: 'relative', zIndex: 1 }}>
+                    
+                    <Box sx={{ borderTop: `1px dashed ${KRAFT.paperDark}` }} />
+                    
+                    {/* Content Architecture Block */}
+                    <CardContent sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column', bgcolor: KRAFT.cream }}>
                       <Typography
                         variant="overline"
                         component="div"
-                        color="primary"
-                        sx={{ fontWeight: 600, mb: 1 }}
+                        sx={{ fontWeight: 700, mb: 0.5, color: KRAFT.bronze, letterSpacing: '0.15em', fontSize: '0.68rem' }}
                       >
                         {product.category}
                       </Typography>
@@ -753,8 +612,10 @@ const ProductShowcase = () => {
                         variant="h5"
                         component="h3"
                         sx={{
+                          fontFamily: '"Playfair Display", Georgia, serif',
                           fontWeight: 700,
                           mb: 1,
+                          color: KRAFT.ink,
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap'
@@ -764,69 +625,59 @@ const ProductShowcase = () => {
                       </Typography>
                       <Typography
                         variant="body2"
-                        color="text.secondary"
                         sx={{
                           mb: 3,
+                          color: `${KRAFT.ink}B2`,
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
                           overflow: 'hidden',
-                          height: 40
+                          minHeight: 36,
+                          lineHeight: 1.5,
+                          fontSize: '0.825rem'
                         }}
                       >
                         {product.description}
                       </Typography>
 
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 3 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                           {product.badgeText === 'sale' && product.discountedPrice ? (
                             <>
-                              {/* Discounted Price (top) */}
-                              <Typography
-                                variant="h6"
-                                color="error.main"
-                                sx={{ fontWeight: 700, lineHeight: 1 }}
-                              >
+                              <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.1, color: '#7A2E1D', fontSize: '1.2rem' }}>
                                 Rs.{product.discountedPrice}
                               </Typography>
-                              {/* Original Price (bottom, struck through) */}
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ textDecoration: 'line-through', fontSize: '0.9rem' }}
-                              >
+                              <Typography variant="caption" sx={{ textDecoration: 'line-through', opacity: 0.5, color: KRAFT.ink }}>
                                 Rs.{product.price}
                               </Typography>
                             </>
                           ) : (
-                            /* Regular Price (not on sale) */
-                            <Typography
-                              variant="h6"
-                              color="primary"
-                              sx={{ fontWeight: 700 }}
-                            >
+                            <Typography variant="h6" sx={{ fontWeight: 700, color: KRAFT.ink, fontSize: '1.15rem' }}>
                               Rs.{product.price}
                             </Typography>
                           )}
                         </Box>
+                        
                         <Button
                           variant="contained"
-                          color="primary"
-                          startIcon={<CartIcon />}
-                          onClick={(e) => {
-                            e.stopPropagation(); // Prevent navigation when clicking the button
-                            handleAddToCart(product);
-                          }}
+                          className="cart-btn"
+                          startIcon={<CartIcon sx={{ fontSize: '1.1rem !important' }} />}
+                          onClick={(e) => handleAddToCart(product, e)}
                           sx={{
-                            borderRadius: 6,
-                            px: 3,
+                            borderRadius: '0px',
+                            px: 2.5,
                             py: 1,
-                            transition: 'all 0.3s',
-                            background: 'linear-gradient(45deg, #333, #666)',
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                            bgcolor: KRAFT.ink,
+                            color: KRAFT.cream,
+                            boxShadow: 'none',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            letterSpacing: '0.06em',
+                            textTransform: 'uppercase',
+                            transition: `all 0.3s ${PREMIUM_CUBIC}`,
                             '&:hover': {
-                              transform: 'translateY(-3px)',
-                              boxShadow: '0 8px 20px rgba(0,0,0,0.2)'
+                              transform: 'scale(1.02)',
+                              boxShadow: '0 8px 20px rgba(140,90,43,0.2)'
                             }
                           }}
                         >
@@ -836,27 +687,32 @@ const ProductShowcase = () => {
                     </CardContent>
                   </Card>
                 </Box>
-                // </Fade>
               ))}
             </Box>
           </Box>
         )}
-        <Box sx={{ textAlign: 'center', mt: 10 }}>
+        
+        {/* Footer Collection Link CTA */}
+        <Box sx={{ textAlign: 'center', mt: { xs: 12, md: 14 } }}>
           <Button
             variant="outlined"
-            color="primary"
             size="large"
             sx={{
-              px: 6,
-              py: 1.5,
-              borderRadius: 6,
-              borderWidth: 2,
+              px: 5,
+              py: 1.75,
+              borderRadius: '0px',
+              borderWidth: '1px !important',
+              borderColor: KRAFT.ink,
+              color: KRAFT.ink,
               fontWeight: 600,
-              transition: 'all 0.3s',
+              fontSize: '0.8rem',
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              transition: `all 0.4s ${PREMIUM_CUBIC}`,
               '&:hover': {
-                transform: 'scale(1.05)',
-                borderWidth: 2,
-                boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
+                bgcolor: KRAFT.ink,
+                color: KRAFT.cream,
+                transform: 'translateY(-4px)'
               }
             }}
             onClick={() => navigate('/collections')}
@@ -865,6 +721,8 @@ const ProductShowcase = () => {
           </Button>
         </Box>
       </Container>
+      
+      {/* Toast Notification Structure */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
@@ -872,11 +730,10 @@ const ProductShowcase = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         sx={{
           '& .MuiPaper-root': {
-            borderRadius: '12px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-            backdropFilter: 'blur(10px)',
-            background: 'rgba(255,255,255,0.9)',
-            border: '1px solid rgba(255,255,255,0.2)'
+            borderRadius: '0px',
+            boxShadow: '0 20px 40px rgba(33,26,18,0.15)',
+            background: KRAFT.cream,
+            border: `1px solid ${KRAFT.paperDark}`
           }
         }}
       >
@@ -886,31 +743,19 @@ const ProductShowcase = () => {
           variant="outlined"
           sx={{
             width: '100%',
-            color: '#2e7d32',
-            backgroundColor: 'rgba(237, 247, 237, 0.9)',
-            '& .MuiAlert-icon': {
-              color: '#4caf50',
-              alignItems: 'center'
-            },
-            '& .MuiAlert-message': {
-              display: 'flex',
-              alignItems: 'center',
-              padding: '8px 0'
-            }
+            color: KRAFT.ink,
+            backgroundColor: 'transparent',
+            borderColor: KRAFT.bronze,
+            borderRadius: '0px',
+            '& .MuiAlert-icon': { color: KRAFT.bronze },
+            '& .MuiAlert-message': { display: 'flex', alignItems: 'center', py: 0.5 }
           }}
         >
-          <AlertTitle sx={{
-            margin: 0,
-            fontWeight: 600,
-            fontSize: '0.875rem'
-          }}>
-            Item Added
+          <AlertTitle sx={{ margin: 0, fontWeight: 700, fontSize: '0.8rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            Added
           </AlertTitle>
-          <Typography variant="body2" sx={{
-            marginLeft: '8px',
-            color: 'inherit'
-          }}>
-            Successfully added to cart
+          <Typography variant="body2" sx={{ ml: 1.5, color: 'inherit', fontSize: '0.8rem', opacity: 0.85 }}>
+            Blend successfully added to your cart selection.
           </Typography>
         </Alert>
       </Snackbar>
